@@ -67,6 +67,10 @@
   .head { padding:22px 18px 16px; border-bottom:1px solid var(--line); }
   .head .date { font-size:13px; color:var(--dim); }
   .head .sub { font-size:13.5px; color:var(--dim); margin-top:7px; }
+  .daynum { font-family:var(--num); font-size:14px; font-weight:600; color:var(--accent); letter-spacing:.04em; text-transform:uppercase; margin:6px 0 -2px; }
+  .mtags { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+  .mtags span { font-size:11px; color:var(--dim); border:1px solid var(--line); border-radius:4px; padding:2px 7px; }
+  .focus { display:inline-block; font-size:10px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:3px; padding:1px 5px; margin-right:7px; vertical-align:2px; }
   .picker { position:relative; margin-top:12px; }
   .pickbtn { width:100%; display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:12px 14px; color:var(--ink); font-size:14.5px; font-weight:500; }
   .pickbtn i { width:8px; height:8px; border-right:2px solid var(--dim); border-bottom:2px solid var(--dim); transform:rotate(45deg) translateY(-2px); transition:transform .15s; }
@@ -826,6 +830,28 @@ function recoveryStats(){
   return out;
 }
 
+function sessionSummary(day, ds, deload){
+  let sets=0; for (const sx of day.ex) sets += deload ? Math.min(2,sx.sets) : sx.sets;
+  const min = Math.round((sets*2.6 + day.ex.length*1.5 + (day.core?8:0)) / 5) * 5;   // ~2.6 min per working set incl. rest
+  return { ex:day.ex.length, sets, min };
+}
+function sessionMuscles(day, ds){
+  const seen=[]; for (const sx of day.ex) { const ex=resolveEx(sx, ds); for (const m of ex.mus.slice(0,2)) if (MUSCLES[m] && !seen.includes(m)) seen.push(m); }
+  return seen.slice(0,6);
+}
+function streakInfo(){
+  const b=DB.block; if (!b) return { weeks:0, goal:0, thisWeek:0 };
+  const P=PROGRAMS[b.program], today=iso(new Date()), mon=mondayOf(new Date());
+  const perWeek = b.sessions.filter(x=>x.week===1 && !x.optional).length;
+  const doneOn = new Set(Object.values(b.done)); for (const d in DB.sessions) doneOn.add(d);
+  const inWeek = (m) => { let c=0; for (let i=0;i<7;i++){ const d=new Date(m); d.setDate(m.getDate()+i); if (doneOn.has(iso(d))) c++; } return c; };
+  const thisWeek = inWeek(mon);
+  let weeks=0, m=new Date(mon); m.setDate(m.getDate()-7);
+  while (inWeek(m) >= perWeek && weeks<520) { weeks++; m.setDate(m.getDate()-7); }
+  if (thisWeek >= perWeek) weeks++;
+  return { weeks, goal:perWeek, thisWeek };
+}
+
 function cardioFor(dayKey){
   const day = prog().days[dayKey];
   if (day.optional) return "This day is optional. If you're in, finish with 15–20 min incline walking. If legs are still sore from Thursday, take the walk and skip the lifts.";
@@ -871,8 +897,10 @@ function renderTrain(){
 
   let h = `<header class="head">
     <div class="date">${DB.settings.name?DB.settings.name+" · ":""}${DOW[cursor.getDay()]}, ${MON[cursor.getMonth()]} ${cursor.getDate()}${ds===today?" · today":""}</div>
+    ${slot.sess ? `<div class="daynum">Week ${slot.sess.week} · Day ${slot.sess.i+1}${slot.sess.deload?" · Deload":""}</div>` : ""}
     <h1>${slot.none ? "No program running" : slot.outside ? "Outside your block" : day.name}</h1>
-    <div class="sub">${slot.none ? "Pick a program below to start a block." : slot.outside ? (ds>DB.block.end ? "Your block has ended. Start the next one below." : "Your block starts "+fmtDate(DB.block.start)+".") : day.rest ? "No lifting scheduled." : `${day.ex.length} exercises${slot.deload?" · deload":""}${slot.makeup?" · make-up session":""}${day.optional?" · optional":""}${saved?" · logged":""}${ds>today&&!saved?" · targets update as you log":""}`}</div>
+    <div class="sub">${slot.none ? "Pick a program below to start a block." : slot.outside ? (ds>DB.block.end ? "Your block has ended. Start the next one below." : "Your block starts "+fmtDate(DB.block.start)+".") : day.rest ? "No lifting scheduled." : (()=>{ const sm=sessionSummary(day, ds, slot.deload); return `${sm.ex} exercises · ${sm.sets} sets · ~${sm.min} min${slot.makeup?" · make-up":""}${day.optional?" · optional":""}${saved?" · logged":""}`; })()}</div>
+    ${!day.rest && !slot.none && !slot.outside ? `<div class="mtags">${sessionMuscles(day, ds).map(m=>`<span>${MUSCLES[m].n}</span>`).join("")}</div>` : ""}
     ${bi ? `<div class="blockbar"><div class="bl"><span>${PROGRAMS[bi.b.program].name} · Week ${bi.week} of ${bi.b.weeks}</span><span>${bi.done}/${bi.req} done${bi.missed.length?` · <em>${bi.missed.length} to make up</em>`:""}</span></div><div class="bar"><i style="width:${Math.round(bi.done/bi.req*100)}%"></i></div></div>` : ""}
     ${active ? `<div class="clockrow"><span class="clocklbl">In progress</span><span id="clock" class="clock">${mmss(Date.now()-active.start)}</span><button class="clockx" id="discard" aria-label="Discard timer">×</button></div>` : ""}
     <div class="picker">
@@ -915,7 +943,7 @@ function renderTrain(){
     h += `<div class="ex ${isOpen?"open":""} ${logged?"logged":""} ${isPR&&saved?"pr":""}">
       <div class="exhead" data-open="${ex.id}">
         ${ex.demo?`<img class="thumb" src="${DEMO_BASE}${ex.demo}/1.jpg" alt="" loading="lazy">`:""}
-        <div class="exname">${ex.n}<div class="exmeta">${ex.sets} sets · ${ex.lo}–${ex.hi}${ex.swapped?' · <span style="color:var(--accent-2)">swapped</span>':""}${ex.drop?" · drop set":""}${isPR&&saved?" · <b style='color:var(--accent)'>new best</b>":""}</div></div>
+        <div class="exname">${day.ex[0]===slotEx?'<span class="focus">Focus</span>':""}${ex.n}<div class="exmeta">${ex.sets} sets · ${ex.lo}–${ex.hi}${ex.swapped?' · <span style="color:var(--accent-2)">swapped</span>':""}${ex.drop?" · drop set":""}${isPR&&saved?" · <b style='color:var(--accent)'>new best</b>":""}</div></div>
         <div class="target ${hit?"hit":""}">${t.w===null?"—":fmt(t.w)} × ${t.r}<small>${logged?(hit?"target met":"logged"):"beat this"}</small></div>
       </div>`;
     if (isOpen) {
@@ -1013,6 +1041,8 @@ function renderBody(){
   let h = `<div class="pad"><h2>${isMap?"Where you stand":"What's recovered"}</h2>
     <p class="lede">${isMap?"Built from the last 28 days of top sets and weekly set counts."+(prog().priority?.length?" Priority muscles need 10+ sets a week.":"")+" Tap a muscle.":"Big muscles get ~72 h, small ones ~48 h. Green is ready to hit again."}</p>
     <div class="seg"><button class="${isMap?"on":""}" data-sub="map">Strength map</button><button class="${!isMap?"on":""}" data-sub="recovery">Recovery</button></div>
+    ${!isMap ? (()=>{ const dates=Object.keys(DB.sessions).sort(); const last=dates.length?daysBetween(dates[dates.length-1], iso(new Date())):null; const fresh=Object.values(levels).filter(l=>l.level===3||l.level===0).length;
+      return `<div class="statrow"><div class="stat"><div class="v">${last===null?"—":last}</div><div class="k">Days since your last workout</div></div><div class="stat"><div class="v up">${fresh}</div><div class="k">Fresh muscle groups</div></div></div>`; })() : ""}
     <div class="bodywrap"><div>${bodySVG(true,levels)}<div class="lab">Front</div></div><div>${bodySVG(false,levels)}<div class="lab">Back</div></div></div>
     <div class="legend">${isMap
       ? `<span><i style="background:var(--ok)"></i>Strong</span><span><i style="background:var(--warn)"></i>Building</span><span><i style="background:var(--bad)"></i>Needs work</span><span><i style="background:var(--surface-2);border:1px solid var(--line)"></i>No data</span>`
@@ -1064,8 +1094,12 @@ function renderBest(){
 }
 function renderHistory(){
   const dates = Object.keys(DB.sessions).sort().reverse();
-  if (!dates.length) return `<div class="empty">No saved sessions yet.</div>`;
-  return `<div class="hist">` + dates.map(d=>{ const s=DB.sessions[d], day=prog().days[s.day]; let sets=0,reps=0,vol=0;
+  const st=streakInfo();
+  const head = `<div class="statrow"><div class="stat"><div class="v">${dates.length}</div><div class="k">Workouts logged</div></div>
+    <div class="stat"><div class="v ${st.goal&&st.thisWeek>=st.goal?"up":""}">${st.thisWeek}<span style="font-size:17px;color:var(--dim)">/${st.goal||"—"}</span></div><div class="k">This week</div></div>
+    <div class="stat"><div class="v ${st.weeks?"up":""}">${st.weeks}</div><div class="k">Week streak</div></div></div>`;
+  if (!dates.length) return head + `<div class="empty">No saved sessions yet.</div>`;
+  return head + `<div class="hist">` + dates.map(d=>{ const s=DB.sessions[d], day=prog().days[s.day]; let sets=0,reps=0,vol=0;
     for (const id in (s.ex||{})) for (const x of s.ex[id]) if (x.r){ sets++; reps+=x.r; vol+=(x.w||0)*x.r; }
     return `<div class="hrow" data-goto="${d}"><div class="d">${fmtDate(d)}</div><div style="flex:1">${day?day.name:s.day}<div class="sub muted">${sets} sets · ${reps} reps${s.dur?" · "+mmss(s.dur):""}${s.core?" · core":""}</div></div><div class="s">${vol>=1000?(vol/1000).toFixed(1)+"k":vol}<span style="font-size:11px;color:var(--dim)"> lbs</span></div></div>`; }).join("") + `</div>`;
 }
