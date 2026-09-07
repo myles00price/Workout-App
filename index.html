@@ -15,6 +15,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Big+Shoulders+Display:wght@800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
+
+  /* ── Splash ─────────────────────────────────────────────────────── */
+  #splash { position:fixed; inset:0; z-index:100; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px; transition:opacity .45s ease; }
+  #splash.out { opacity:0; pointer-events:none; }
+  #splash .spin { width:120px; height:120px; position:relative; transform-style:preserve-3d; animation:spin3d 1.8s cubic-bezier(.45,.05,.55,.95) infinite; perspective:600px; }
+  #splash .face { position:absolute; inset:0; background-image:var(--logo); background-size:contain; background-position:center; background-repeat:no-repeat; backface-visibility:hidden; -webkit-backface-visibility:hidden; }
+  #splash .face.front { transform:translateZ(6px); filter:drop-shadow(0 0 18px rgba(232,185,35,.35)); }
+  #splash .face.back  { transform:rotateY(180deg) translateZ(6px); filter:brightness(.55); }
+  #splash .edge { position:absolute; top:6%; bottom:6%; width:12px; left:calc(50% - 6px); background:linear-gradient(#a37a12,#5f4608); transform:rotateY(90deg); opacity:.9; }
+  #splash .edge.e2 { transform:rotateY(-90deg); }
+  #splash .splashmark { font-family:'Big Shoulders Display','Barlow Condensed',system-ui,sans-serif; font-size:34px; font-weight:900; letter-spacing:.12em; color:#E8B923; text-transform:uppercase; }
+  @keyframes spin3d { from { transform:rotateY(0deg); } to { transform:rotateY(360deg); } }
+  @media (prefers-reduced-motion:reduce) { #splash .spin { animation:none; } }
+  :root { --logo:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cpath d='M60 6 L106 32 L106 88 L60 114 L14 88 L14 32 Z' fill='%23E8B923'/%3E%3Cpath d='M60 6 L106 32 L60 58 L14 32 Z' fill='%23F3CF5C'/%3E%3Cpath d='M14 32 L60 58 L60 114 L14 88 Z' fill='%23C99A1B'/%3E%3Cpath d='M78 46 L60 36 L42 46 L42 74 L60 84 L78 74 L78 62 L62 62 L62 70 L69 70 L69 69 L60 74 L51 69 L51 51 L60 46 L69 51 L69 54 L78 54 Z' fill='%23000'/%3E%3C/svg%3E"); }
+
   /* ── Themes ─────────────────────────────────────────────────────── */
   html[data-theme="venice"] {
     --ground:#000000; --surface:#111111; --surface-2:#1A1A1A; --line:#262626;
@@ -293,6 +308,14 @@
 </style>
 </head>
 <body>
+<div id="splash" aria-hidden="true">
+  <div class="spin">
+    <div class="face front"></div>
+    <div class="face back"></div>
+    <div class="edge e1"></div><div class="edge e2"></div>
+  </div>
+  <div class="splashmark">GRANITE</div>
+</div>
 <div id="app"></div>
 
 <script>
@@ -1311,6 +1334,11 @@ function exportData(){ const blob=new Blob([JSON.stringify(DB,null,2)],{type:"ap
 function importData(file){ const fr=new FileReader(); fr.onload=()=>{ try { const n=JSON.parse(fr.result); if(!n.sessions) throw 0; DB={ sessions:n.sessions, targets:n.targets||{}, weights:n.weights||[], active:null, block:n.block||null, swaps:n.swaps||{}, sessionSwaps:n.sessionSwaps||{}, settings:Object.assign(DB.settings,n.settings||{}) }; load(); persist(); document.documentElement.dataset.theme=DB.settings.theme; toast("Backup restored"); } catch(e){ toast("That file isn't a "+APP_NAME+" backup."); } }; fr.readAsText(file); }
 
 load(); render();
+(function(){
+  const start=Date.now(), MIN=1500, el=document.getElementById("splash");
+  const done=()=>{ const wait=Math.max(0, MIN-(Date.now()-start)); setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),500); }, wait); };
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(done); else done();
+})();
 </script>
 </body>
 </html>
