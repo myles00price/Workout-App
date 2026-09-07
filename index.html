@@ -157,6 +157,14 @@
   .exlist { display:flex; gap:6px; margin-top:12px; align-items:center; }
   .exlist img { width:52px; height:52px; border-radius:6px; object-fit:cover; background:var(--surface-2); }
   .exlist .more { font-family:var(--num); font-size:16px; color:var(--dim); padding-left:4px; }
+  .pjrow { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); }
+  .pjrow:last-of-type { border-bottom:none; }
+  .pjrow .nm { flex:1; font-size:14px; font-weight:500; }
+  .pjrow .nm .muted { font-size:11.5px; font-weight:400; }
+  .pjnum { text-align:right; white-space:nowrap; }
+  .pjnum b { font-family:var(--num); font-size:22px; font-weight:600; }
+  .pjnum b.up { color:var(--accent); }
+  .pjnum small { display:block; font-size:10.5px; color:var(--dim); }
   .rrow { font-size:15px; }
   .rrow b { font-family:var(--num); font-size:22px; font-weight:600; }
   .rrow b.up { color:var(--ok); }
@@ -810,7 +818,57 @@ function nextTarget(ex, t, top, tank){
   return { t:{ w, r:t.r }, moved:false, why:"Grind — hold here" };
 }
 
-const e1rm = (w,r) => (w&&r) ? w*(1+r/30) : null;
+// Estimated 1RM. Averages Epley and Brzycki, folds in reps-in-reserve from the
+// slider (a set of 8 with 2 left is a 10-rep effort), and discounts sets past
+// 12 reps where every formula gets unreliable.
+function e1rmAdj(w, r, tank){
+  if (!w || !r) return null;
+  const rir = tank ? tankToRIR(tank) : 0;
+  const R = Math.min(r + rir, 20);
+  const epley = w*(1+R/30), brz = R<37 ? w*36/(37-R) : epley;
+  let e = (epley+brz)/2;
+  if (R>12) e = w*(1+12/30) + (e - w*(1+12/30))*0.5;   // taper past 12
+  return e;
+}
+const e1rm = (w,r) => e1rmAdj(w,r,null);
+
+// Least-squares trend of e1RM over the last 8 weeks, projected 4 weeks out.
+function projectLift(lib, asOf){
+  const today = asOf || iso(new Date());
+  const pts = historyFor(lib).filter(x=>daysBetween(x.date,today)<=56 && x.sets[0].w && x.sets[0].r)
+    .map(x=>({ t:-daysBetween(x.date,today), e:e1rmAdj(x.sets[0].w,x.sets[0].r,x.tank) }));
+  if (pts.length<2) return { n:pts.length, now: pts.length?pts[pts.length-1].e:null };
+  const n=pts.length, mx=pts.reduce((a,p)=>a+p.t,0)/n, my=pts.reduce((a,p)=>a+p.e,0)/n;
+  let sxx=0, sxy=0, sst=0; for (const p of pts){ sxx+=(p.t-mx)**2; sxy+=(p.t-mx)*(p.e-my); sst+=(p.e-my)**2; }
+  const slope = sxx? sxy/sxx : 0, icpt = my - slope*mx;
+  let sse=0; for (const p of pts) sse += (p.e-(icpt+slope*p.t))**2;
+  const r2 = sst ? 1 - sse/sst : 0;
+  const now = icpt;                                    // fitted value today
+  const cap = now*0.025/7;                             // max 2.5%/week
+  const sl = Math.max(-cap, Math.min(cap, slope));
+  const conf = n>=5 && r2>0.6 ? "high" : n>=3 ? "medium" : "low";
+  return { n, now, in4: now + sl*28, perWeek: sl*7, r2, conf, latest: pts[pts.length-1].e };
+}
+
+// Bodyweight-ratio standards (approximate, widely used bands)
+const STD = {
+  bench:    { n:"Bench",     m:[0.5,0.75,1.0,1.5,2.0],   f:[0.25,0.5,0.75,1.0,1.25] },
+  bbsquat:  { n:"Squat",     m:[0.75,1.25,1.5,2.25,2.75],f:[0.5,0.75,1.25,1.5,2.0] },
+  deadlift: { n:"Deadlift",  m:[1.0,1.5,2.0,2.5,3.0],    f:[0.5,1.0,1.25,1.75,2.25] },
+  bbohp:    { n:"Overhead",  m:[0.35,0.55,0.8,1.05,1.35],f:[0.2,0.35,0.5,0.75,1.0] },
+  bbrow:    { n:"Row",       m:[0.5,0.75,1.0,1.25,1.5],  f:[0.35,0.5,0.75,1.0,1.25] },
+};
+const STD_ALIAS = { sumo:"deadlift", smithbench:"bench", frontsquat:"bbsquat" };
+const LEVELS = ["Untrained","Novice","Intermediate","Advanced","Elite"];
+function strengthLevel(lib, e){
+  const key = STD_ALIAS[lib]||lib, st=STD[key], sex=DB.settings.sex, bw=latestWeight();
+  if (!st || !sex || !bw || !e) return null;
+  const bands = st[sex], ratio = e/bw;
+  let i=0; while (i<bands.length && ratio>=bands[i]) i++;
+  const lvl = LEVELS[Math.max(0,i-1)], next = i<bands.length ? { name:LEVELS[i], at:bands[i]*bw } : null;
+  return { ratio, lvl, next, name:st.n };
+}
+function latestWeight(){ const ws=DB.weights.filter(x=>x.w).sort((a,b)=>a.date<b.date?-1:1); return ws.length?ws[ws.length-1].w:null; }
 function historyFor(id){ return Object.keys(DB.sessions).sort().map(d=>({date:d,sets:DB.sessions[d].ex?.[id],tank:DB.sessions[d].tank?.[id]})).filter(x=>x.sets&&x.sets[0]&&x.sets[0].r); }
 function lastFor(id, before){ const h=historyFor(id).filter(x=>x.date<before); return h.length ? h[h.length-1] : null; }
 function bestFor(id, before){ let b=null; for (const x of historyFor(id)) { if (before && x.date>=before) continue; const e=e1rm(x.sets[0].w,x.sets[0].r); if (e && (!b||e>b.e)) b={e,date:x.date,w:x.sets[0].w,r:x.sets[0].r}; } return b; }
@@ -972,6 +1030,18 @@ function renderHome(){
     <div class="stat" data-go="progress" data-sub="history"><div class="v ${st.weeks?"up":""}">${st.weeks}</div><div class="k">Week streak</div></div>
     <div class="stat" data-go="progress" data-sub="history"><div class="v ${st.goal&&st.thisWeek>=st.goal?"up":""}">${st.thisWeek}<span style="font-size:17px;color:var(--dim)">/${st.goal||"—"}</span></div><div class="k">This week</div></div>
     <div class="stat" data-go="body" data-sub="recovery"><div class="v">${since===null?"—":since}</div><div class="k">Days since lift</div></div></div>`;
+
+  // Projected max
+  const libsSeen = {}; for (const d of dates) for (const k in (DB.sessions[d].ex||{})) if (LIB[k]) libsSeen[k]=(libsSeen[k]||0)+1;
+  const mainLibs = Object.keys(libsSeen).filter(k=>historyFor(k).length>=2)
+    .sort((a,b)=>((STD[STD_ALIAS[b]||b]?1:0)-(STD[STD_ALIAS[a]||a]?1:0)) || (libsSeen[b]-libsSeen[a])).slice(0,3);
+  if (mainLibs.length) {
+    h += `<div class="card link" data-go="progress" data-sub="lifts"><div class="ck">Projected max</div>`;
+    for (const k of mainLibs) { const pj=projectLift(k), lv=strengthLevel(k, pj.now);
+      h += `<div class="pjrow"><div class="nm">${LIB[k].n}${lv?`<div class="muted">${lv.lvl} · ${lv.ratio.toFixed(2)}× bodyweight${lv.next?` · ${lv.next.name} at ${Math.round(lv.next.at)}`:""}</div>`:""}</div>
+        <div class="pjnum"><b>${Math.round(pj.now)}</b>${pj.in4?`<span class="arrow"> → </span><b class="${pj.in4>pj.now+1?"up":""}">${Math.round(pj.in4)}</b><small>in 4 wks · ${pj.conf}</small>`:`<small>need 2+ sessions</small>`}</div></div>`; }
+    h += `<div class="muted" style="margin-top:8px">Estimated from your top sets and the slider — no max attempts needed. ${DB.settings.sex?"":"Set strength standards in Settings to see levels."}</div></div>`;
+  }
 
   // Recovery
   const rec=recoveryStats(), ready=Object.keys(rec).filter(m=>rec[m].level===3), recov=Object.keys(rec).filter(m=>rec[m].level===1);
@@ -1185,6 +1255,10 @@ function renderLifts(){
   const first=pts[0], last=pts[pts.length-1], delta=pts.length>1?last.e-first.e:0, best=pts.reduce((a,b)=>b.e>a.e?b:a,pts[0]);
   h += `<div class="statrow"><div class="stat"><div class="v">${fmt(last.w)}<span style="font-size:17px">×${last.r}</span></div><div class="k">Latest top set</div></div>
     <div class="stat"><div class="v ${delta>0?"up":delta<0?"down":""}">${delta>0?"+":""}${Math.round(delta)}</div><div class="k">Est. 1RM change, lbs</div></div></div>`;
+  { const pj=projectLift(ex.lib), lv=strengthLevel(ex.lib, pj.now);
+    h += `<div class="statrow"><div class="stat"><div class="v">${Math.round(pj.now)}</div><div class="k">Est. max today</div></div>
+      <div class="stat"><div class="v ${pj.in4&&pj.in4>pj.now+1?"up":""}">${pj.in4?Math.round(pj.in4):"—"}</div><div class="k">${pj.in4?`Projected in 4 wks · ${pj.perWeek>=0?"+":""}${pj.perWeek.toFixed(1)}/wk · ${pj.conf} confidence`:"Projection needs 2+ sessions"}</div></div></div>`;
+    if (lv) h += `<div class="note plain" style="margin-bottom:12px"><b>${lv.lvl}</b> — ${lv.ratio.toFixed(2)}× bodyweight.${lv.next?` ${lv.next.name} starts at ${Math.round(lv.next.at)} (${lv.next.at/latestWeight()}× bodyweight).`:" Top band."}</div>`; }
   if (pts.length>1) { const W=100,H=100,lo=Math.min(...pts.map(p=>p.e)),hi=Math.max(...pts.map(p=>p.e)),rng=(hi-lo)||1;
     const xy=pts.map((p,i)=>[(i/(pts.length-1))*W, H-((p.e-lo)/rng)*(H-14)-7]);
     h += `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline fill="none" stroke="var(--accent-2)" stroke-width="1.4" vector-effect="non-scaling-stroke" points="${xy.map(p=>p.join(",")).join(" ")}"/>${xy.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="1.6" vector-effect="non-scaling-stroke" fill="${pts[i].e===best.e?"var(--accent)":"var(--accent-2)"}"/>`).join("")}</svg>`; }
@@ -1305,6 +1379,8 @@ function renderSettings(){
       return `<div class="th ${s.theme===k?"on":""}" data-picktheme="${k}"><div class="sw" style="background:${c[0]}"><i style="background:${c[1]}"></i><i style="background:${c[2]};margin-left:3px;width:10px"></i></div>${l}</div>`; }).join("")}</div>
     <div class="row" style="margin-top:14px"><div class="k">Name<small>Shown in the header</small></div><input class="num" style="width:150px;text-align:left;font-family:var(--body);font-size:15px;font-weight:500" id="nameIn" value="${s.name||""}" placeholder="—"></div>
     <div class="row"><div class="k">Program<small>${DB.block?PROGRAMS[DB.block.program].name+" · "+fmtDate(DB.block.start)+" – "+fmtDate(DB.block.end):"No block running"}</small></div><button class="ghost" id="chgprog">Change</button></div>
+    <div class="row"><div class="k">Strength standards<small>Bodyweight-ratio bands differ by sex. Used only for the level labels.</small></div>
+      <select id="sexIn" style="width:auto;margin:0;padding:9px 34px 9px 12px"><option value="" ${!s.sex?"selected":""}>Off</option><option value="m" ${s.sex==="m"?"selected":""}>Men</option><option value="f" ${s.sex==="f"?"selected":""}>Women</option></select></div>
     <div class="row"><div class="k">Goal weight<small>Drives the pace check on the Check-in tab</small></div><input class="num" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="goalIn" value="${s.goalWeight??""}" placeholder="—"></div>
     <div class="row" style="flex-direction:column;align-items:stretch"><div class="k">Backup<small>Your log lives on this phone only. Save a copy every few weeks.</small></div>
       <div class="bkrow"><button class="ghost" id="exp">Save backup file</button><button class="ghost" id="imp">Restore backup</button></div><input type="file" id="impfile" accept="application/json" hidden></div>
@@ -1348,6 +1424,7 @@ function bind(){
   if (pickOpen) document.body.onclick=()=>{ pickOpen=false; document.body.onclick=null; render(); }; else document.body.onclick=null;
   const pick=$("#pick"); if (pick) pick.onchange=()=>{ statPick=pick.value; render(); };
   const nm=$("#nameIn"); if (nm) nm.onchange=()=>{ DB.settings.name=nm.value.trim(); persist(); toast("Saved"); };
+  const sx=$("#sexIn"); if (sx) sx.onchange=()=>{ DB.settings.sex=sx.value||null; persist(); toast("Saved"); };
   const goal=$("#goalIn"); if (goal) goal.onchange=()=>{ DB.settings.goalWeight = goal.value===""?null:Number(goal.value); persist(); toast("Goal saved"); };
   const core=$("#core"); if (core) core.onchange=()=>{ coreDone=core.checked; const btn=$("#save"); if (btn) btn.disabled=false; };
 
