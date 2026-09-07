@@ -208,6 +208,7 @@
   .mrow .st { font-size:12px; font-weight:500; }
   .mrow .st.l1 { color:var(--bad); } .mrow .st.l2 { color:var(--warn); } .mrow .st.l3 { color:var(--ok); } .mrow .st.l0 { color:var(--dimmer); }
   .mrow .sub { font-size:11.5px; color:var(--dim); }
+  .pritag { font-size:10px; color:var(--accent); border:1px solid var(--accent); border-radius:3px; padding:1px 5px; margin-left:6px; vertical-align:1px; letter-spacing:.02em; }
 
   /* review modal */
   .modal { position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:20; display:flex; align-items:flex-end; justify-content:center; }
@@ -236,6 +237,14 @@
   .bkrow button { flex:1; }
   .danger { color:var(--bad); border-color:color-mix(in srgb,var(--bad) 40%,var(--line)); }
 
+  .goals { display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+  .goal { display:flex; gap:12px; align-items:flex-start; background:var(--surface); border:1px solid var(--line); border-radius:7px; padding:12px; cursor:pointer; }
+  .goal:has(input:checked) { border-color:var(--accent); }
+  .goal input { margin-top:3px; accent-color:var(--accent); }
+  .goal b { display:block; font-size:14px; font-weight:600; }
+  .goal span { display:block; font-size:12px; color:var(--dim); margin-top:2px; line-height:1.4; }
+  .obmark { font-family:'Big Shoulders Display',var(--num); font-size:34px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); text-align:center; margin:4px 0 14px; }
+
   .toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:var(--accent); color:var(--accent-ink); padding:11px 20px; border-radius:6px; font-size:13.5px; font-weight:600; z-index:50; white-space:nowrap; }
   @media (prefers-reduced-motion:no-preference) {
     .toast { animation:rise .22s ease-out; }
@@ -259,6 +268,7 @@ const PROGRAMS = {
   arnold: {
     name: "Arnold split",
     desc: "Chest+Back / Shoulders+Arms / Legs. 5 days, Saturday alternates.",
+    priority: [],
     schedule: d => {
       const wd = d.getDay();
       if (wd===1) return "chestBackA";
@@ -271,23 +281,23 @@ const PROGRAMS = {
     },
     days: {
       chestBackA: { name:"Chest + Back", ex:[
-        { id:"bench",    n:"Barbell flat bench",          sets:4, w:195,  r:8,  lo:8,  hi:10, inc:5,   mus:["chest","triceps","fdelt"], demo:"Barbell_Bench_Press_-_Medium_Grip" },
-        { id:"cgrow",    n:"Seated close-grip cable row", sets:4, w:100,  r:12, lo:12, hi:15, inc:10,  mus:["lats","traps","biceps"], demo:"Seated_Cable_Rows" },
-        { id:"incdb",    n:"Incline pronated DB press",   sets:3, w:90,   r:6,  lo:6,  hi:8,  inc:5,   mus:["chest","fdelt","triceps"], demo:"Incline_Dumbbell_Press" },
-        { id:"latpull",  n:"Overhand lat pulldown",       sets:3, w:100,  r:10, lo:10, hi:12, inc:10,  mus:["lats","biceps"], demo:"Wide-Grip_Lat_Pulldown" },
-        { id:"incfly",   n:"Incline DB chest fly",        sets:3, w:30,   r:10, lo:10, hi:15, inc:5,   mus:["chest"], demo:"Incline_Dumbbell_Flyes", drop:true },
+        { id:"bench", n:"Barbell flat bench",          sets:4, w:null, r:8,  lo:8,  hi:10, inc:5,   mus:["chest","triceps","fdelt"], demo:"Barbell_Bench_Press_-_Medium_Grip" },
+        { id:"cgrow", n:"Seated close-grip cable row", sets:4, w:null, r:12, lo:12, hi:15, inc:10,  mus:["lats","traps","biceps"], demo:"Seated_Cable_Rows" },
+        { id:"incdb", n:"Incline pronated DB press",   sets:3, w:null, r:6,  lo:6,  hi:8,  inc:5,   mus:["chest","fdelt","triceps"], demo:"Incline_Dumbbell_Press" },
+        { id:"latpull", n:"Overhand lat pulldown",       sets:3, w:null, r:10, lo:10, hi:12, inc:10,  mus:["lats","biceps"], demo:"Wide-Grip_Lat_Pulldown" },
+        { id:"incfly", n:"Incline DB chest fly",        sets:3, w:null, r:10, lo:10, hi:15, inc:5,   mus:["chest"], demo:"Incline_Dumbbell_Flyes", drop:true },
         { id:"facepull", n:"Face pull",                   sets:3, w:null, r:15, lo:15, hi:20, inc:5,   mus:["rdelt","traps"], demo:"Face_Pull" },
       ]},
       shouldersArmsA: { name:"Shoulders + Arms", core:"Dead bug 3×8/side · Pallof press 3×10/side", ex:[
-        { id:"dbpress",  n:"Seated DB shoulder press",    sets:4, w:60,   r:8,  lo:8,  hi:10, inc:5,   mus:["fdelt","sdelt","triceps"], demo:"Dumbbell_Shoulder_Press" },
-        { id:"lateral",  n:"Standing DB lateral raise",   sets:4, w:22.5, r:10, lo:10, hi:15, inc:2.5, mus:["sdelt"], demo:"Side_Lateral_Raise" },
-        { id:"ohtri",    n:"Seated DB overhead tri ext",  sets:3, w:60,   r:8,  lo:8,  hi:10, inc:5,   mus:["triceps"], demo:"Seated_Triceps_Press" },
-        { id:"cablecurl",n:"Straight bar cable curl",     sets:3, w:32.5, r:12, lo:12, hi:15, inc:5,   mus:["biceps"], demo:"Standing_Biceps_Cable_Curl",
+        { id:"dbpress", n:"Seated DB shoulder press",    sets:4, w:null, r:8,  lo:8,  hi:10, inc:5,   mus:["fdelt","sdelt","triceps"], demo:"Dumbbell_Shoulder_Press" },
+        { id:"lateral", n:"Standing DB lateral raise",   sets:4, w:null, r:10, lo:10, hi:15, inc:2.5, mus:["sdelt"], demo:"Side_Lateral_Raise" },
+        { id:"ohtri", n:"Seated DB overhead tri ext",  sets:3, w:null, r:8,  lo:8,  hi:10, inc:5,   mus:["triceps"], demo:"Seated_Triceps_Press" },
+        { id:"cablecurl", n:"Straight bar cable curl",     sets:3, w:null, r:12, lo:12, hi:15, inc:5,   mus:["biceps"], demo:"Standing_Biceps_Cable_Curl",
           note:"Sept 4 log shows set 3 at 47.5×10 after 32.5×12. Confirm the pulley before trusting this baseline." },
         { id:"pushdown", n:"Cable rope pushdown",         sets:3, w:null, r:12, lo:12, hi:15, inc:5,   mus:["triceps"], demo:"Triceps_Pushdown_-_Rope_Attachment" },
-        { id:"hammer",   n:"Alternating DB hammer curl",  sets:3, w:30,   r:12, lo:10, hi:12, inc:5,   mus:["biceps","forearms"], demo:"Alternate_Hammer_Curl",
+        { id:"hammer", n:"Alternating DB hammer curl",  sets:3, w:null, r:12, lo:10, hi:12, inc:5,   mus:["biceps","forearms"], demo:"Alternate_Hammer_Curl",
           note:"Hold 30 across all three sets. Dropping to 20 by set 3 is session fatigue, not the plan." },
-        { id:"reardelt", n:"Seated rear delt fly",        sets:3, w:15,   r:10, lo:10, hi:15, inc:5,   mus:["rdelt"], demo:"Seated_Bent-Over_Rear_Delt_Raise", drop:true },
+        { id:"reardelt", n:"Seated rear delt fly",        sets:3, w:null, r:10, lo:10, hi:15, inc:5,   mus:["rdelt"], demo:"Seated_Bent-Over_Rear_Delt_Raise", drop:true },
       ]},
       legs: { name:"Legs", core:"Captain's chair leg raise 3×10 — posterior pelvic tilt at the top", ex:[
         { id:"legpress", n:"Leg press",                   sets:4, w:null, r:10, lo:8,  hi:12, inc:10,  mus:["quads","glutes"], demo:"Leg_Press" },
@@ -300,13 +310,13 @@ const PROGRAMS = {
       ]},
       recovery: { name:"Active recovery", rest:true, core:"45 min walk · Dead bug 3×8/side · Pallof press 3×10/side · hip flexor and thoracic mobility", ex:[] },
       chestBackB: { name:"Chest + Back", ex:[
-        { id:"incdbB",   n:"Incline pronated DB press",   sets:4, w:80,   r:10, lo:10, hi:12, inc:5,   mus:["chest","fdelt","triceps"], demo:"Incline_Dumbbell_Press" },
-        { id:"bbrow",    n:"Bent over barbell row",       sets:4, w:95,   r:10, lo:10, hi:12, inc:5,   mus:["lats","traps","lowback","biceps"], demo:"Bent_Over_Barbell_Row" },
-        { id:"cablefly", n:"Cable fly, high to low",      sets:3, w:17.5, r:10, lo:10, hi:15, inc:2.5, mus:["chest"], demo:"Cable_Crossover" },
-        { id:"pullover", n:"Cable rope pullover",         sets:3, w:42.5, r:12, lo:12, hi:15, inc:5,   mus:["lats","chest"], demo:"Rope_Straight-Arm_Pulldown",
+        { id:"incdbB", n:"Incline pronated DB press",   sets:4, w:null, r:10, lo:10, hi:12, inc:5,   mus:["chest","fdelt","triceps"], demo:"Incline_Dumbbell_Press" },
+        { id:"bbrow", n:"Bent over barbell row",       sets:4, w:null, r:10, lo:10, hi:12, inc:5,   mus:["lats","traps","lowback","biceps"], demo:"Bent_Over_Barbell_Row" },
+        { id:"cablefly", n:"Cable fly, high to low",      sets:3, w:null, r:10, lo:10, hi:15, inc:2.5, mus:["chest"], demo:"Cable_Crossover" },
+        { id:"pullover", n:"Cable rope pullover",         sets:3, w:null, r:12, lo:12, hi:15, inc:5,   mus:["lats","chest"], demo:"Rope_Straight-Arm_Pulldown",
           note:"Hold 42.5 across all three sets." },
         { id:"underlat", n:"Underhand lat pulldown",      sets:3, w:null, r:12, lo:12, hi:15, inc:10,  mus:["lats","biceps"], demo:"Underhand_Cable_Pulldowns", drop:true },
-        { id:"shrug",    n:"Barbell shrug",               sets:3, w:155,  r:10, lo:10, hi:15, inc:10,  mus:["traps"], demo:"Barbell_Shrug" },
+        { id:"shrug", n:"Barbell shrug",               sets:3, w:null, r:10, lo:10, hi:15, inc:10,  mus:["traps"], demo:"Barbell_Shrug" },
       ]},
       legsB: { name:"Legs", core:"Seated crunch 3×12 · Pallof press 3×10/side", ex:[
         { id:"hamcurlB", n:"Seated hamstring curl",       sets:4, w:null, r:10, lo:10, hi:12, inc:10,  mus:["hams"], demo:"Seated_Leg_Curl" },
@@ -316,15 +326,76 @@ const PROGRAMS = {
         { id:"calfB",    n:"Calf raise",                  sets:4, w:null, r:15, lo:15, hi:20, inc:10,  mus:["calves"], demo:"Seated_Calf_Raise" },
       ]},
       shouldersArmsB: { name:"Shoulders + Arms", core:"Seated crunch 3×12 · Pallof press 3×10/side", ex:[
-        { id:"lateralB", n:"Standing DB lateral raise",   sets:4, w:22.5, r:15, lo:15, hi:20, inc:2.5, mus:["sdelt"], demo:"Side_Lateral_Raise" },
+        { id:"lateralB", n:"Standing DB lateral raise",   sets:4, w:null, r:15, lo:15, hi:20, inc:2.5, mus:["sdelt"], demo:"Side_Lateral_Raise" },
         { id:"machpress",n:"Machine shoulder press",      sets:3, w:null, r:10, lo:10, hi:12, inc:10,  mus:["fdelt","sdelt","triceps"], demo:"Leverage_Shoulder_Press" },
-        { id:"hammerB",  n:"Alternating DB hammer curl",  sets:3, w:30,   r:10, lo:10, hi:12, inc:5,   mus:["biceps","forearms"], demo:"Alternate_Hammer_Curl" },
+        { id:"hammerB", n:"Alternating DB hammer curl",  sets:3, w:null, r:10, lo:10, hi:12, inc:5,   mus:["biceps","forearms"], demo:"Alternate_Hammer_Curl" },
         { id:"pushdownB",n:"Cable rope pushdown",         sets:3, w:null, r:12, lo:12, hi:15, inc:5,   mus:["triceps"], demo:"Triceps_Pushdown_-_Rope_Attachment" },
-        { id:"reardeltB",n:"Seated rear delt fly",        sets:3, w:15,   r:15, lo:15, hi:20, inc:5,   mus:["rdelt"], demo:"Seated_Bent-Over_Rear_Delt_Raise" },
+        { id:"reardeltB", n:"Seated rear delt fly",        sets:3, w:null, r:15, lo:15, hi:20, inc:5,   mus:["rdelt"], demo:"Seated_Bent-Over_Rear_Delt_Raise" },
+      ]},
+      off: { name:"Rest day", rest:true, ex:[] },
+    }
+  },
+  sculpt: {
+    name: "Sculpt",
+    desc: "Glutes, legs, and a lean build. 4 days plus an optional 5th. Same overload model, different emphasis.",
+    priority: ["glutes","hams","quads","abs","obliques","sdelt"],
+    schedule: d => {
+      const wd = d.getDay();
+      if (wd===1) return "lowerA";
+      if (wd===2) return "upperA";
+      if (wd===3) return "recovery";
+      if (wd===4) return "lowerB";
+      if (wd===5) return "upperB";
+      if (wd===6) return "glutes";
+      return "off";
+    },
+    days: {
+      lowerA: { name:"Lower — Glutes", core:"Dead bug 3×8/side · Side plank 3×20 s/side", ex:[
+        { id:"s_hipthrust", n:"Hip thrust machine",        sets:4, w:null, r:10, lo:10, hi:15, inc:10,  mus:["glutes","hams"], demo:"Barbell_Hip_Thrust" },
+        { id:"s_legpress",  n:"Leg press, feet high",      sets:3, w:null, r:10, lo:10, hi:15, inc:10,  mus:["glutes","hams","quads"], demo:"Leg_Press" },
+        { id:"s_rdl",       n:"Dumbbell Romanian deadlift",sets:3, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["hams","glutes","lowback"], demo:"Romanian_Deadlift" },
+        { id:"s_abduct",    n:"Hip abduction machine",     sets:3, w:null, r:15, lo:12, hi:20, inc:10,  mus:["glutes"], demo:"Thigh_Abductor" },
+        { id:"s_lunge",     n:"Dumbbell walking lunge",    sets:3, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["glutes","quads"], demo:"Dumbbell_Lunges" },
+      ]},
+      upperA: { name:"Upper — Shoulders + Back", core:"Pallof press 3×10/side · Reverse crunch 3×12", ex:[
+        { id:"s_latpull",   n:"Lat pulldown",              sets:3, w:null, r:10, lo:10, hi:12, inc:10,  mus:["lats","biceps"], demo:"Wide-Grip_Lat_Pulldown" },
+        { id:"s_dbpress",   n:"Seated DB shoulder press",  sets:3, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["fdelt","sdelt","triceps"], demo:"Dumbbell_Shoulder_Press" },
+        { id:"s_cablerow",  n:"Seated cable row",          sets:3, w:null, r:12, lo:10, hi:15, inc:10,  mus:["lats","traps","biceps"], demo:"Seated_Cable_Rows" },
+        { id:"s_lateral",   n:"DB lateral raise",          sets:3, w:null, r:12, lo:12, hi:15, inc:2.5, mus:["sdelt"], demo:"Side_Lateral_Raise" },
+        { id:"s_facepull",  n:"Face pull",                 sets:3, w:null, r:15, lo:12, hi:20, inc:5,   mus:["rdelt","traps"], demo:"Face_Pull" },
+        { id:"s_pushdown",  n:"Cable rope pushdown",       sets:2, w:null, r:12, lo:12, hi:15, inc:5,   mus:["triceps"], demo:"Triceps_Pushdown_-_Rope_Attachment" },
+      ]},
+      recovery: { name:"Active recovery", rest:true, core:"30–45 min walk · Dead bug 3×8/side · hip flexor and glute stretches", ex:[] },
+      lowerB: { name:"Lower — Quads + Hams", core:"Captain's chair leg raise 3×10 · Plank 3×30 s", ex:[
+        { id:"s_goblet",    n:"Goblet squat",              sets:4, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["quads","glutes"], demo:"Goblet_Squat" },
+        { id:"s_hamcurl",   n:"Seated hamstring curl",     sets:3, w:null, r:12, lo:10, hi:15, inc:10,  mus:["hams"], demo:"Seated_Leg_Curl" },
+        { id:"s_split",     n:"DB Bulgarian split squat",  sets:3, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["quads","glutes"], demo:"Split_Squat_with_Dumbbells" },
+        { id:"s_legext",    n:"Leg extension",             sets:3, w:null, r:12, lo:12, hi:15, inc:10,  mus:["quads"], demo:"Leg_Extensions" },
+        { id:"s_kickback",  n:"Cable glute kickback",      sets:3, w:null, r:12, lo:12, hi:15, inc:5,   mus:["glutes"], demo:"One-Legged_Cable_Kickback" },
+        { id:"s_calf",      n:"Calf raise",                sets:3, w:null, r:15, lo:12, hi:20, inc:10,  mus:["calves"], demo:"Seated_Calf_Raise" },
+      ]},
+      upperB: { name:"Upper — Full + Core", core:"Cable crunch 3×12 · Side plank 3×20 s/side · Pallof 3×10/side", ex:[
+        { id:"s_chestpress",n:"Chest press machine",       sets:3, w:null, r:10, lo:10, hi:12, inc:10,  mus:["chest","triceps","fdelt"], demo:"Machine_Bench_Press" },
+        { id:"s_dbrow",     n:"One-arm dumbbell row",      sets:3, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["lats","biceps"], demo:"One-Arm_Dumbbell_Row" },
+        { id:"s_lateralB",  n:"DB lateral raise",          sets:3, w:null, r:15, lo:12, hi:15, inc:2.5, mus:["sdelt"], demo:"Side_Lateral_Raise" },
+        { id:"s_underlat",  n:"Underhand lat pulldown",    sets:3, w:null, r:12, lo:10, hi:15, inc:10,  mus:["lats","biceps"], demo:"Underhand_Cable_Pulldowns" },
+        { id:"s_hammer",    n:"DB hammer curl",            sets:2, w:null, r:12, lo:10, hi:15, inc:5,   mus:["biceps","forearms"], demo:"Alternate_Hammer_Curl" },
+      ]},
+      glutes: { name:"Glutes + Conditioning", optional:true, core:"Reverse crunch 3×12 · Dead bug 3×8/side", ex:[
+        { id:"s_hipthrustB",n:"Hip thrust machine",        sets:3, w:null, r:12, lo:12, hi:15, inc:10,  mus:["glutes","hams"], demo:"Barbell_Hip_Thrust" },
+        { id:"s_stepup",    n:"Dumbbell step-up",          sets:3, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["glutes","quads"], demo:"Dumbbell_Step_Ups" },
+        { id:"s_abductB",   n:"Hip abduction machine",     sets:3, w:null, r:15, lo:15, hi:20, inc:10,  mus:["glutes"], demo:"Thigh_Abductor" },
+        { id:"s_backext",   n:"Back extension, glute focus",sets:3, w:null, r:12, lo:12, hi:15, inc:5,   mus:["glutes","hams","lowback"], demo:"Hyperextensions_Back_Extensions" },
       ]},
       off: { name:"Rest day", rest:true, ex:[] },
     }
   }
+};
+
+const SEEDS = {
+  myles: { label:"Myles — Aug/Sep 2026 logs", targets: {
+    bench:{w:195,r:8}, cgrow:{w:100,r:12}, incdb:{w:90,r:6}, latpull:{w:100,r:10}, incfly:{w:30,r:10}, dbpress:{w:60,r:8}, lateral:{w:22.5,r:10}, ohtri:{w:60,r:8}, cablecurl:{w:32.5,r:12}, hammer:{w:30,r:12}, reardelt:{w:15,r:10}, incdbB:{w:80,r:10}, bbrow:{w:95,r:10}, cablefly:{w:17.5,r:10}, pullover:{w:42.5,r:12}, shrug:{w:155,r:10}, lateralB:{w:22.5,r:15}, hammerB:{w:30,r:10}, reardeltB:{w:15,r:15}
+  } }
 };
 
 const MUSCLES = {
@@ -349,7 +420,7 @@ const fmtDate = s => { const d=parse(s); return `${MON[d.getMonth()]} ${d.getDat
 function isoWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7)); return Math.ceil(((t-Date.UTC(t.getUTCFullYear(),0,1))/864e5+1)/7); }
 const daysBetween = (a,b) => Math.round((parse(b)-parse(a))/864e5);
 
-let DB = { sessions:{}, targets:{}, weights:[], active:null, settings:{ theme:"venice", program:"arnold", goalWeight:null, name:"" } };
+let DB = { sessions:{}, targets:{}, weights:[], active:null, settings:{ theme:"venice", program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } };
 let menuOpen=false, clockTimer=null, demoOpen={}, DEMO_CACHE={}, view="train", sub="map", cursor=new Date(), openEx=null, draft={}, coreDone=false, statPick=null, review=null, selMuscle=null, toastMsg=null;
 
 function load(){
@@ -362,7 +433,8 @@ function load(){
     }
   } catch(e){}
   DB.sessions ||= {}; DB.targets ||= {}; DB.weights ||= []; DB.active ||= null;
-  DB.settings = Object.assign({ theme:"venice", program:"arnold", goalWeight:null }, DB.settings||{});
+  DB.settings = Object.assign({ theme:"venice", program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false }, DB.settings||{});
+  if (!DB.settings.onboarded && Object.keys(DB.sessions).length) { DB.settings.onboarded=true; DB.settings.seed="myles"; DB.settings.name ||= "Myles"; }   // existing install = Myles
   if (!DB.settings.themeSet) DB.settings.theme = "venice";   // new default unless the user has picked one
   document.documentElement.dataset.theme = DB.settings.theme;
 }
@@ -447,11 +519,13 @@ function muscleStats(){
   for (const m in trendAcc) out[m].trend = trendAcc[m].reduce((a,b)=>a+b,0)/trendAcc[m].length;
   const dates = Object.keys(DB.sessions).sort();
   const span = dates.length ? daysBetween(dates[0], today) : 0;
+  const pri = prog().priority || [];
   for (const m in out) {
-    const o = out[m];
+    const o = out[m]; o.priority = pri.includes(m);
+    const need = o.priority ? 10 : 8;
     if (o.sets28===0) o.level=0, o.label="No data";
-    else if ((o.trend!==null&&o.trend>=2) && o.sets7>=8) o.level=3, o.label="Strong";
-    else if (o.sets7>=8 || (o.trend!==null&&o.trend>0) || span<14) o.level=2, o.label= span<14 ? "Early days" : "Building";
+    else if ((o.trend!==null&&o.trend>=2) && o.sets7>=need) o.level=3, o.label="Strong";
+    else if (o.sets7>=need || (o.trend!==null&&o.trend>0) || span<14) o.level=2, o.label= span<14 ? "Early days" : "Building";
     else o.level=1, o.label="Needs work";
   }
   return out;
@@ -470,6 +544,7 @@ function recoveryStats(){
 
 function cardioFor(dayKey){
   const day = prog().days[dayKey];
+  if (day.optional) return "This day is optional. If you're in, finish with 15–20 min incline walking. If legs are still sore from Thursday, take the walk and skip the lifts.";
   if (dayKey==="recovery") return "30–45 min walk at conversational pace. Nothing that leaves you sore — the point of today is arriving at tomorrow fresher.";
   if (day.rest) return "Steps only. Hit 10k and leave it there. Rest is the stimulus today.";
   return "10–15 min incline walk after the lift, zone 2, heart rate low enough to talk. Sauna after, not before. Skip anything high-intensity on a lifting day — it competes for the same recovery.";
@@ -496,7 +571,8 @@ function render(){
     <button class="burger ${menuOpen?"x":""}" id="burger" aria-label="Menu" aria-expanded="${menuOpen}"><i></i><i></i><i></i></button></div>` + h;
   if (menuOpen) h += `<div class="scrim" data-menuclose></div><nav class="drawer">${NAV.map(([k,l,ic])=>
     `<button class="${view===k?"on":""}" data-tab="${k}">${ic}${l}</button>`).join("")}<div class="foot">${prog().name}</div></nav>`;
-  if (review) h += renderReview();
+  if (!DB.settings.onboarded) h += renderOnboard();
+  else if (review) h += renderReview();
   if (toastMsg) h += `<div class="toast">${toastMsg}</div>`;
   app.innerHTML = h; bind();
 }
@@ -507,9 +583,9 @@ function renderTrain(){
   const active = DB.active && DB.active.date===ds ? DB.active : null;
 
   let h = `<header class="head">
-    <div class="date">${DOW[cursor.getDay()]}, ${MON[cursor.getMonth()]} ${cursor.getDate()}${ds===today?" · today":""}</div>
+    <div class="date">${DB.settings.name?DB.settings.name+" · ":""}${DOW[cursor.getDay()]}, ${MON[cursor.getMonth()]} ${cursor.getDate()}${ds===today?" · today":""}</div>
     <h1>${day.name}</h1>
-    <div class="sub">${day.rest ? "No lifting scheduled." : `${day.ex.length} exercises${saved?" · logged":""}${ds>today&&!saved?" · targets update as you log":""}`}</div>
+    <div class="sub">${day.rest ? "No lifting scheduled." : `${day.ex.length} exercises${day.optional?" · optional day":""}${saved?" · logged":""}${ds>today&&!saved?" · targets update as you log":""}`}</div>
     ${active ? `<div class="clockrow"><span class="clocklbl">In progress</span><span id="clock" class="clock">${mmss(Date.now()-active.start)}</span><button class="clockx" id="discard" aria-label="Discard timer">×</button></div>` : ""}
     <select id="progpick">${Object.keys(PROGRAMS).map(k=>`<option value="${k}" ${k===DB.settings.program?"selected":""}>${PROGRAMS[k].name}</option>`).join("")}</select>
   </header>`;
@@ -557,7 +633,7 @@ function renderTrain(){
         <input type="range" min="1" max="10" step="1" value="${tank??5}" data-tank="${ex.id}">
         <div class="ends"><span>1 · nothing left</span><span>10 · very easy</span></div>
         <div class="read">${tank?tankLabel(tank):"Slide to rate the top set"}</div></div>`;
-      if (ex.note) h += `<div class="note">${ex.note}</div>`;
+      if (ex.note && DB.settings.seed==="myles") h += `<div class="note">${ex.note}</div>`;
       if (ex.demo) {
         const open = demoOpen[ex.id], dm = DEMO_CACHE[ex.demo];
         h += `<button class="howto" data-demo="${ex.id}">${open?"Hide":"How to"} ▸</button>`;
@@ -615,19 +691,20 @@ function renderBody(){
   const isMap = sub==="map";
   const levels = isMap ? muscleStats() : recoveryStats();
   let h = `<div class="pad"><h2>${isMap?"Where you stand":"What's recovered"}</h2>
-    <p class="lede">${isMap?"Built from the last 28 days of top sets and weekly set counts. Tap a muscle.":"Big muscles get ~72 h, small ones ~48 h. Green is ready to hit again."}</p>
+    <p class="lede">${isMap?"Built from the last 28 days of top sets and weekly set counts."+(prog().priority?.length?" Priority muscles need 10+ sets a week.":"")+" Tap a muscle.":"Big muscles get ~72 h, small ones ~48 h. Green is ready to hit again."}</p>
     <div class="seg"><button class="${isMap?"on":""}" data-sub="map">Strength map</button><button class="${!isMap?"on":""}" data-sub="recovery">Recovery</button></div>
     <div class="bodywrap"><div>${bodySVG(true,levels)}<div class="lab">Front</div></div><div>${bodySVG(false,levels)}<div class="lab">Back</div></div></div>
     <div class="legend">${isMap
       ? `<span><i style="background:var(--ok)"></i>Strong</span><span><i style="background:var(--warn)"></i>Building</span><span><i style="background:var(--bad)"></i>Needs work</span><span><i style="background:var(--surface-2);border:1px solid var(--line)"></i>No data</span>`
       : `<span><i style="background:var(--ok)"></i>Ready</span><span><i style="background:var(--warn)"></i>Almost</span><span><i style="background:var(--bad)"></i>Recovering</span>`}</div>`;
-  const order = Object.keys(MUSCLES).sort((a,b)=>(levels[a].level||99)-(levels[b].level||99));
+  const pri = prog().priority || [];
+  const order = Object.keys(MUSCLES).sort((a,b)=>(pri.includes(b)-pri.includes(a)) || ((levels[a].level||99)-(levels[b].level||99)));
   const rows = selMuscle ? [selMuscle] : order;
   h += `<div>` + rows.map(m=>{ const l=levels[m];
     const sub2 = isMap
       ? (l.level===0 ? "Log a session that hits it" : `${Math.round(l.sets7)} sets this week${l.trend!==null?` · ${l.trend>=0?"+":""}${l.trend.toFixed(1)}% est. 1RM (28 d)`:""}`)
       : (l.days===null ? "" : l.days===0 ? "Trained today" : `${l.days} day${l.days===1?"":"s"} since`);
-    return `<div class="mrow" data-m="${m}"><div class="nm">${MUSCLES[m].n}<div class="sub">${sub2}</div></div><div class="st l${l.level}">${l.label}</div></div>`; }).join("") + `</div>`;
+    return `<div class="mrow" data-m="${m}"><div class="nm">${MUSCLES[m].n}${pri.includes(m)?' <span class="pritag">priority</span>':""}<div class="sub">${sub2}</div></div><div class="st l${l.level}">${l.label}</div></div>`; }).join("") + `</div>`;
   if (selMuscle) h += `<button class="ghost" style="width:100%;margin-top:12px" data-clearm>Show all muscles</button>`;
   return h + `</div>`;
 }
@@ -673,8 +750,14 @@ function renderHistory(){
     return `<div class="hrow" data-goto="${d}"><div class="d">${fmtDate(d)}</div><div style="flex:1">${day?day.name:s.day}<div class="sub muted">${sets} sets · ${reps} reps${s.dur?" · "+mmss(s.dur):""}${s.core?" · core":""}</div></div><div class="s">${vol>=1000?(vol/1000).toFixed(1)+"k":vol}<span style="font-size:11px;color:var(--dim)"> lbs</span></div></div>`; }).join("") + `</div>`;
 }
 function renderCheckin(){
-  const ws = DB.weights.slice().sort((a,b)=>a.date<b.date?-1:1), goal=DB.settings.goalWeight;
-  let h = `<div class="setrow" style="padding:0 0 14px"><div class="field"><input inputmode="decimal" id="wIn" placeholder="Today's weight"><span>lbs</span></div><button class="primary" id="wSave" style="width:auto;padding:12px 18px">Log</button></div>`;
+  const all = DB.weights.slice().sort((a,b)=>a.date<b.date?-1:1), goal=DB.settings.goalWeight;
+  const ws = all.filter(x=>x.w), tape = all.filter(x=>x.waist||x.hips);
+  let h = `<div class="setrow" style="padding:0 0 6px"><div class="field"><input inputmode="decimal" id="wIn" placeholder="Weight"><span>lbs</span></div>
+    <div class="field"><input inputmode="decimal" id="waistIn" placeholder="Waist"><span>in</span></div><div class="field"><input inputmode="decimal" id="hipIn" placeholder="Hips"><span>in</span></div></div>
+    <button class="primary" id="wSave" style="margin-bottom:14px">Log check-in</button>
+    <div class="muted" style="margin:-6px 0 14px">Tape is optional but tells you more than the scale. Waist at the navel, hips at the widest point, relaxed.</div>`;
+  if (tape.length) { const t0=tape[0], t1=tape[tape.length-1];
+    h += `<div class="statrow">${t1.waist?`<div class="stat"><div class="v">${fmt(t1.waist)}<span style="font-size:15px;color:var(--dim)">${t0!==t1&&t0.waist?" "+(t1.waist-t0.waist>0?"+":"")+fmt(t1.waist-t0.waist):""}</span></div><div class="k">Waist, in</div></div>`:""}${t1.hips?`<div class="stat"><div class="v">${fmt(t1.hips)}<span style="font-size:15px;color:var(--dim)">${t0!==t1&&t0.hips?" "+(t1.hips-t0.hips>0?"+":"")+fmt(t1.hips-t0.hips):""}</span></div><div class="k">Hips, in</div></div>`:""}</div>`; }
   if (!ws.length) return h + `<div class="empty">Weigh in first thing, after the bathroom, before food. Same conditions every time — the trend is what matters, not any single number.${goal?"":"<br><br>Set a goal weight in Settings to see pace."}</div>`;
   const last=ws[ws.length-1], first=ws[0];
   const wk = ws.filter(w=>daysBetween(w.date,last.date)<=6), avg=wk.reduce((a,b)=>a+b.w,0)/wk.length;
@@ -691,7 +774,7 @@ function renderCheckin(){
     const xy=ws.map((p,i)=>[(i/(ws.length-1))*W, H-((p.w-lo)/rng)*(H-14)-7]);
     const gy = goal ? H-((goal-lo)/rng)*(H-14)-7 : null;
     h += `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${gy!==null?`<line x1="0" x2="${W}" y1="${gy}" y2="${gy}" stroke="var(--accent)" stroke-dasharray="2 2" vector-effect="non-scaling-stroke"/>`:""}<polyline fill="none" stroke="var(--accent-2)" stroke-width="1.4" vector-effect="non-scaling-stroke" points="${xy.map(p=>p.join(",")).join(" ")}"/></svg>`; }
-  h += `<div class="hist">` + ws.slice().reverse().slice(0,14).map(w=>`<div class="hrow"><div class="d">${fmtDate(w.date)}</div><div class="s">${fmt(w.w)}</div></div>`).join("") + `</div>`;
+  h += `<div class="hist">` + all.slice().reverse().slice(0,14).map(w=>`<div class="hrow"><div class="d">${fmtDate(w.date)}</div><div class="s">${w.w?fmt(w.w):"—"}</div><div class="rest">${[w.waist?"W "+fmt(w.waist):"",w.hips?"H "+fmt(w.hips):""].filter(Boolean).join(" · ")}</div></div>`).join("") + `</div>`;
   return h;
 }
 
@@ -708,6 +791,24 @@ function renderReview(){
     <button class="primary" style="margin-top:16px" data-close>Close</button></div></div>`;
 }
 
+// ── Onboarding ─────────────────────────────────────────────────────────
+function renderOnboard(){
+  return `<div class="modal"><div class="sheet" onclick="event.stopPropagation()">
+    <div class="obmark">${APP_NAME}</div>
+    <h2>Who's lifting?</h2>
+    <p class="lede">Your log stays on this phone. Every target starts blank and builds from what you actually lift.</p>
+    <input class="txt" id="obName" placeholder="Your name" autocomplete="off">
+    <div class="muted" style="margin:-4px 0 8px">What are you building?</div>
+    <div class="goals">
+      <label class="goal"><input type="radio" name="obProg" value="arnold" checked><div><b>Build all over</b><span>Arnold split. Chest, back, shoulders, arms, legs — 5 days.</span></div></label>
+      <label class="goal"><input type="radio" name="obProg" value="sculpt"><div><b>Glutes, legs, and lean</b><span>Sculpt. Lower body twice a week, shoulders and core, optional glute day.</span></div></label>
+    </div>
+    <label class="corecheck" style="margin:0 0 14px"><input type="checkbox" id="obSeed"> Load Myles's starting numbers<span class="muted">only if this is Myles's phone</span></label>
+    <button class="primary" id="obGo">Start</button>
+    <div class="muted" style="text-align:center;margin-top:10px">Program: ${prog().name}</div>
+  </div></div>`;
+}
+
 // ── Settings ───────────────────────────────────────────────────────────
 function renderSettings(){
   const s=DB.settings;
@@ -715,7 +816,8 @@ function renderSettings(){
   return `<div class="pad"><h2>Settings</h2><p class="lede">Theme, program, goal, and backups.</p>
     <div class="themes">${[["venice","Venice"],["iron","Iron"],["paper","Paper"],["midnight","Midnight"]].map(([k,l])=>{ const c=sw(k);
       return `<div class="th ${s.theme===k?"on":""}" data-theme="${k}"><div class="sw" style="background:${c[0]}"><i style="background:${c[1]}"></i><i style="background:${c[2]};margin-left:3px;width:10px"></i></div>${l}</div>`; }).join("")}</div>
-    <div class="row" style="margin-top:14px"><div class="k">Program<small>More get added here as we build them</small></div><select id="progpick2" style="width:auto;margin:0;padding:9px 34px 9px 12px">${Object.keys(PROGRAMS).map(k=>`<option value="${k}" ${k===s.program?"selected":""}>${PROGRAMS[k].name}</option>`).join("")}</select></div>
+    <div class="row" style="margin-top:14px"><div class="k">Name<small>Shown in the header</small></div><input class="num" style="width:150px;text-align:left;font-family:var(--body);font-size:15px;font-weight:500" id="nameIn" value="${s.name||""}" placeholder="—"></div>
+    <div class="row"><div class="k">Program<small>More get added here as we build them</small></div><select id="progpick2" style="width:auto;margin:0;padding:9px 34px 9px 12px">${Object.keys(PROGRAMS).map(k=>`<option value="${k}" ${k===s.program?"selected":""}>${PROGRAMS[k].name}</option>`).join("")}</select></div>
     <div class="row"><div class="k">Goal weight<small>Drives the pace check on the Check-in tab</small></div><input class="num" inputmode="decimal" id="goalIn" value="${s.goalWeight??""}" placeholder="—"></div>
     <div class="row" style="flex-direction:column;align-items:stretch"><div class="k">Backup<small>Your log lives on this phone only. Save a copy every few weeks.</small></div>
       <div class="bkrow"><button class="ghost" id="exp">Save backup file</button><button class="ghost" id="imp">Restore backup</button></div><input type="file" id="impfile" accept="application/json" hidden></div>
@@ -743,6 +845,7 @@ function bind(){
 
   ["progpick","progpick2"].forEach(id=>{ const el=document.getElementById(id); if (el) el.onchange=()=>{ DB.settings.program=el.value; persist(); render(); }; });
   const pick=$("#pick"); if (pick) pick.onchange=()=>{ statPick=pick.value; render(); };
+  const nm=$("#nameIn"); if (nm) nm.onchange=()=>{ DB.settings.name=nm.value.trim(); persist(); toast("Saved"); };
   const goal=$("#goalIn"); if (goal) goal.onchange=()=>{ DB.settings.goalWeight = goal.value===""?null:Number(goal.value); persist(); toast("Goal saved"); };
   const core=$("#core"); if (core) core.onchange=()=>{ coreDone=core.checked; const btn=$("#save"); if (btn) btn.disabled=false; };
 
@@ -753,6 +856,9 @@ function bind(){
     const wrap=inp.closest(".tank"); wrap.querySelector(".lbl b").textContent=inp.value; wrap.querySelector(".read").textContent=tankLabel(Number(inp.value));
     const btn=$("#save"); if (btn) btn.disabled=false; }; });
 
+  const ob=$("#obGo"); if (ob) ob.onclick=()=>{ const nm=$("#obName").value.trim(); DB.settings.name=nm||"Lifter"; DB.settings.onboarded=true;
+    const pr=document.querySelector('input[name="obProg"]:checked'); if (pr) DB.settings.program=pr.value;
+    if ($("#obSeed").checked) { DB.settings.seed="myles"; DB.targets=Object.assign({}, SEEDS.myles.targets, DB.targets); } persist(); render(); };
   const save=$("#save"); if (save) save.onclick=saveSession;
   const st=$("#start"); if (st) st.onclick=()=>{ DB.active={ date:iso(cursor), start:Date.now() }; persist(); render(); startClock(); };
   const fin=$("#finish"); if (fin) fin.onclick=()=>{ const has=Object.keys(draft).filter(k=>k!=="__tank").some(k=>draft[k].some(x=>x&&x.r)) || DB.sessions[iso(cursor)];
@@ -761,11 +867,11 @@ function bind(){
   $$("[data-week]").forEach(b=>b.onclick=()=>{ cursor.setDate(cursor.getDate()+7*Number(b.dataset.week)); openEx=null; draft={}; coreDone=false; render(); });
   $$("[data-demo]").forEach(b=>b.onclick=async()=>{ const id=b.dataset.demo, ex=exById(id); demoOpen[id]=!demoOpen[id]; render(); if (demoOpen[id] && !DEMO_CACHE[ex.demo]) { await loadDemo(ex.demo); render(); } });
   if (DB.active) startClock();
-  const wS=$("#wSave"); if (wS) wS.onclick=()=>{ const v=Number($("#wIn").value); if(!v) return; const d=iso(new Date());
-    DB.weights = DB.weights.filter(w=>w.date!==d); DB.weights.push({date:d,w:v}); persist(); toast("Logged "+v); };
+  const wS=$("#wSave"); if (wS) wS.onclick=()=>{ const v=Number($("#wIn").value)||null, wa=Number($("#waistIn").value)||null, hp=Number($("#hipIn").value)||null; if(!v&&!wa&&!hp) return; const d=iso(new Date());
+    const prev=DB.weights.find(w=>w.date===d)||{}; DB.weights = DB.weights.filter(w=>w.date!==d); DB.weights.push({date:d, w:v??prev.w??null, waist:wa??prev.waist??null, hips:hp??prev.hips??null}); persist(); toast("Logged"); };
   const exp=$("#exp"); if (exp) exp.onclick=exportData;
   const imp=$("#imp"), impf=$("#impfile"); if (imp) imp.onclick=()=>impf.click(); if (impf) impf.onchange=()=>{ if(impf.files[0]) importData(impf.files[0]); };
-  const rs=$("#reset"); if (rs) rs.onclick=()=>{ if (confirm("Erase every session, target and weigh-in on this device?")) { localStorage.removeItem(KEY); localStorage.removeItem("training-log-v1"); load(); DB.sessions={}; DB.targets={}; DB.weights=[]; persist(); toast("Erased"); } };
+  const rs=$("#reset"); if (rs) rs.onclick=()=>{ if (confirm("Erase every session, target and weigh-in on this device?")) { localStorage.removeItem(KEY); localStorage.removeItem("training-log-v1"); DB={ sessions:{}, targets:{}, weights:[], active:null, settings:{ theme:DB.settings.theme, themeSet:DB.settings.themeSet, program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } }; persist(); render(); } };
 }
 
 function saveSession(){
