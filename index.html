@@ -778,8 +778,8 @@ function renderTrain(){
       else if (t.w===null) h += `<div class="lastwk">No baseline yet. Leave 2 in the tank and record what you get.</div>`;
       for (let i=0;i<(slot.deload?Math.min(2,ex.sets):ex.sets);i++){ const s=d[i]||{};
         h += `<div class="setrow"><div class="setlabel">${i===0?"<b>Top set</b>":"Set "+(i+1)}</div>
-          <div class="field"><input inputmode="decimal" data-ex="${ex.id}" data-i="${i}" data-f="w" value="${s.w??""}" placeholder="${i===0&&t.w!==null?fmt(t.w):""}"><span>lbs</span></div>
-          <div class="field"><input inputmode="numeric" data-ex="${ex.id}" data-i="${i}" data-f="r" value="${s.r??""}" placeholder="${i===0?t.r:""}"><span>reps</span></div></div>`; }
+          <div class="field"><input inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" enterkeyhint="next" autocomplete="off" data-ex="${ex.id}" data-i="${i}" data-f="w" value="${s.w??""}" placeholder="${i===0&&t.w!==null?fmt(t.w):""}"><span>lbs</span></div>
+          <div class="field"><input inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" autocomplete="off" data-ex="${ex.id}" data-i="${i}" data-f="r" value="${s.r??""}" placeholder="${i===0?t.r:""}"><span>reps</span></div></div>`; }
       h += `<div class="tank">
         <div class="lbl"><span>Left in the tank on the top set</span><b>${tank??"—"}</b></div>
         <input type="range" min="1" max="10" step="1" value="${tank??5}" data-tank="${ex.id}">
@@ -904,8 +904,8 @@ function renderHistory(){
 function renderCheckin(){
   const all = DB.weights.slice().sort((a,b)=>a.date<b.date?-1:1), goal=DB.settings.goalWeight;
   const ws = all.filter(x=>x.w), tape = all.filter(x=>x.waist||x.hips);
-  let h = `<div class="setrow" style="padding:0 0 6px"><div class="field"><input inputmode="decimal" id="wIn" placeholder="Weight"><span>lbs</span></div>
-    <div class="field"><input inputmode="decimal" id="waistIn" placeholder="Waist"><span>in</span></div><div class="field"><input inputmode="decimal" id="hipIn" placeholder="Hips"><span>in</span></div></div>
+  let h = `<div class="setrow" style="padding:0 0 6px"><div class="field"><input inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" id="wIn" placeholder="Weight"><span>lbs</span></div>
+    <div class="field"><input inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" id="waistIn" placeholder="Waist"><span>in</span></div><div class="field"><input inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" autocomplete="off" id="hipIn" placeholder="Hips"><span>in</span></div></div>
     <button class="primary" id="wSave" style="margin-bottom:14px">Log check-in</button>
     <div class="muted" style="margin:-6px 0 14px">Tape is optional but tells you more than the scale. Waist at the navel, hips at the widest point, relaxed.</div>`;
   if (tape.length) { const t0=tape[0], t1=tape[tape.length-1];
@@ -994,10 +994,10 @@ function renderSettings(){
   const sw = t => ({venice:["#000000","#E8B923","#E03131"],iron:["#16191D","#D9A441","#ECEEF1"],paper:["#F5F6F8","#B8761A","#15191E"],midnight:["#0D1424","#4FC3F7","#E6ECF7"]})[t];
   return `<div class="pad"><h2>Settings</h2><p class="lede">Theme, program, goal, and backups.</p>
     <div class="themes">${[["venice","Venice"],["iron","Iron"],["paper","Paper"],["midnight","Midnight"]].map(([k,l])=>{ const c=sw(k);
-      return `<div class="th ${s.theme===k?"on":""}" data-theme="${k}"><div class="sw" style="background:${c[0]}"><i style="background:${c[1]}"></i><i style="background:${c[2]};margin-left:3px;width:10px"></i></div>${l}</div>`; }).join("")}</div>
+      return `<div class="th ${s.theme===k?"on":""}" data-picktheme="${k}"><div class="sw" style="background:${c[0]}"><i style="background:${c[1]}"></i><i style="background:${c[2]};margin-left:3px;width:10px"></i></div>${l}</div>`; }).join("")}</div>
     <div class="row" style="margin-top:14px"><div class="k">Name<small>Shown in the header</small></div><input class="num" style="width:150px;text-align:left;font-family:var(--body);font-size:15px;font-weight:500" id="nameIn" value="${s.name||""}" placeholder="—"></div>
     <div class="row"><div class="k">Program<small>${DB.block?PROGRAMS[DB.block.program].name+" · "+fmtDate(DB.block.start)+" – "+fmtDate(DB.block.end):"No block running"}</small></div><button class="ghost" id="chgprog">Change</button></div>
-    <div class="row"><div class="k">Goal weight<small>Drives the pace check on the Check-in tab</small></div><input class="num" inputmode="decimal" id="goalIn" value="${s.goalWeight??""}" placeholder="—"></div>
+    <div class="row"><div class="k">Goal weight<small>Drives the pace check on the Check-in tab</small></div><input class="num" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" id="goalIn" value="${s.goalWeight??""}" placeholder="—"></div>
     <div class="row" style="flex-direction:column;align-items:stretch"><div class="k">Backup<small>Your log lives on this phone only. Save a copy every few weeks.</small></div>
       <div class="bkrow"><button class="ghost" id="exp">Save backup file</button><button class="ghost" id="imp">Restore backup</button></div><input type="file" id="impfile" accept="application/json" hidden></div>
     <div class="row" style="flex-direction:column;align-items:stretch"><div class="k">Reset<small>Wipes every session, target, and weigh-in on this device.</small></div><div class="bkrow"><button class="ghost danger" id="reset">Erase everything</button></div></div>
@@ -1020,7 +1020,7 @@ function bind(){
   $$("[data-m]").forEach(b=>b.onclick=()=>{ selMuscle = selMuscle===b.dataset.m?null:b.dataset.m; render(); });
   const cm=$("[data-clearm]"); if (cm) cm.onclick=()=>{ selMuscle=null; render(); };
   $$("[data-close]").forEach(b=>b.onclick=()=>{ review=null; render(); });
-  $$("[data-theme]").forEach(b=>b.onclick=()=>{ DB.settings.theme=b.dataset.theme; DB.settings.themeSet=true; document.documentElement.dataset.theme=DB.settings.theme; persist(); render(); });
+  $$("[data-picktheme]").forEach(b=>b.onclick=()=>{ DB.settings.theme=b.dataset.picktheme; DB.settings.themeSet=true; document.documentElement.dataset.theme=DB.settings.theme; persist(); render(); });
 
   const pb=$("#pickbtn"); if (pb) pb.onclick=(e)=>{ e.stopPropagation(); pickOpen=!pickOpen; render(); };
   $$("[data-prog]").forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); startSheet=b.dataset.prog; pickOpen=false; render(); });
@@ -1040,7 +1040,7 @@ function bind(){
   const core=$("#core"); if (core) core.onchange=()=>{ coreDone=core.checked; const btn=$("#save"); if (btn) btn.disabled=false; };
 
   $$("input[data-ex]").forEach(inp=>inp.oninput=()=>{ const {ex,i,f}=inp.dataset; draft[ex] ||= []; draft[ex][i] ||= {};
-    const v = inp.value===""?null:Number(inp.value); draft[ex][i][f]=Number.isNaN(v)?null:v;
+    const v = inp.value===""?null:Number(inp.value.replace(",",".")); draft[ex][i][f]=Number.isNaN(v)?null:v;
     const btn=$("#save"); if (btn) btn.disabled=false; });
   $$("input[data-tank]").forEach(inp=>{ inp.oninput=()=>{ draft.__tank ||= {}; draft.__tank[inp.dataset.tank]=Number(inp.value);
     const wrap=inp.closest(".tank"); wrap.querySelector(".lbl b").textContent=inp.value; wrap.querySelector(".read").textContent=tankLabel(Number(inp.value));
