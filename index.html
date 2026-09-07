@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<title>Lift Log</title>
+<title>Tank</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Lift Log">
+<meta name="apple-mobile-web-app-title" content="Tank">
 <meta name="theme-color" content="#16191D">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%2316191D'/%3E%3Crect x='28' y='78' width='124' height='24' rx='4' fill='%23D9A441'/%3E%3Crect x='16' y='62' width='22' height='56' rx='5' fill='%23ECEEF1'/%3E%3Crect x='142' y='62' width='22' height='56' rx='5' fill='%23ECEEF1'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Big+Shoulders+Display:wght@800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
   /* ── Themes ─────────────────────────────────────────────────────── */
@@ -143,9 +143,10 @@
 
   /* top bar + drawer */
   #app { padding-top:54px; }
-  .topbar { position:fixed; top:0; left:0; right:0; max-width:560px; margin:0 auto; height:54px; display:flex; align-items:center; justify-content:space-between; padding:0 6px 0 18px; background:color-mix(in srgb,var(--ground) 92%,transparent); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-bottom:1px solid var(--line); z-index:8; padding-top:env(safe-area-inset-top); box-sizing:content-box; }
-  .topbar .brand { font-family:var(--num); font-size:20px; font-weight:600; letter-spacing:.01em; }
-  .topbar .brand span { color:var(--dim); font-weight:500; margin-left:8px; font-size:15px; }
+  .topbar { position:fixed; top:0; left:0; right:0; max-width:560px; margin:0 auto; height:54px; display:grid; grid-template-columns:44px 1fr 44px; align-items:center; padding:0 6px; background:color-mix(in srgb,var(--ground) 92%,transparent); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-bottom:1px solid var(--line); z-index:8; padding-top:env(safe-area-inset-top); box-sizing:content-box; }
+  .topbar .brand { grid-column:2; text-align:center; font-family:'Big Shoulders Display',var(--num); font-size:26px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; line-height:1; }
+  .topbar .brand span { display:block; font-family:var(--body); font-size:11px; font-weight:500; color:var(--dim); letter-spacing:.02em; text-transform:none; margin-top:2px; }
+  .topbar .burger { grid-column:3; }
   .burger { width:44px; height:44px; border:none; background:none; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:5px; border-radius:6px; }
   .burger i { display:block; width:20px; height:2px; background:var(--ink); border-radius:1px; transition:transform .18s,opacity .18s; }
   .burger.x i:nth-child(1) { transform:translateY(7px) rotate(45deg); }
@@ -330,6 +331,7 @@ const MUSCLES = {
 // ═══════════════════════════════════════════════════════════════════════
 //  STATE + STORAGE
 // ═══════════════════════════════════════════════════════════════════════
+const APP_NAME = "Tank";
 const KEY = "lift-log-v2";
 const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const parse = s => { const [y,m,dd] = s.split("-").map(Number); return new Date(y,m-1,dd); };
@@ -482,7 +484,7 @@ function render(){
     ["settings","Settings",'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></svg>'],
   ];
   const cur = NAV.find(n=>n[0]===view);
-  h = `<div class="topbar"><div class="brand">Lift Log<span>${cur?cur[1]:""}</span></div>
+  h = `<div class="topbar"><div class="brand">${APP_NAME}<span>${cur?cur[1]:""}</span></div>
     <button class="burger ${menuOpen?"x":""}" id="burger" aria-label="Menu" aria-expanded="${menuOpen}"><i></i><i></i><i></i></button></div>` + h;
   if (menuOpen) h += `<div class="scrim" data-menuclose></div><nav class="drawer">${NAV.map(([k,l,ic])=>
     `<button class="${view===k?"on":""}" data-tab="${k}">${ic}${l}</button>`).join("")}<div class="foot">${prog().name}</div></nav>`;
@@ -785,8 +787,8 @@ function saveSession(){
   render();
 }
 
-function exportData(){ const blob=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`lift-log-${iso(new Date())}.json`; a.click(); URL.revokeObjectURL(a.href); }
-function importData(file){ const fr=new FileReader(); fr.onload=()=>{ try { const n=JSON.parse(fr.result); if(!n.sessions) throw 0; DB={ sessions:n.sessions, targets:n.targets||{}, weights:n.weights||[], settings:Object.assign(DB.settings,n.settings||{}) }; persist(); document.documentElement.dataset.theme=DB.settings.theme; toast("Backup restored"); } catch(e){ toast("That file isn't a lift log backup."); } }; fr.readAsText(file); }
+function exportData(){ const blob=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`${APP_NAME.toLowerCase()}-${iso(new Date())}.json`; a.click(); URL.revokeObjectURL(a.href); }
+function importData(file){ const fr=new FileReader(); fr.onload=()=>{ try { const n=JSON.parse(fr.result); if(!n.sessions) throw 0; DB={ sessions:n.sessions, targets:n.targets||{}, weights:n.weights||[], settings:Object.assign(DB.settings,n.settings||{}) }; persist(); document.documentElement.dataset.theme=DB.settings.theme; toast("Backup restored"); } catch(e){ toast("That file isn't a "+APP_NAME+" backup."); } }; fr.readAsText(file); }
 
 load(); render();
 </script>
