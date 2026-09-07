@@ -147,6 +147,21 @@
   .makeup b { font-size:14px; }
   .makeup span { font-size:12px; color:var(--dim); }
 
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:14px; margin-bottom:10px; box-shadow:var(--shadow); }
+  .card.today { border-color:var(--accent); }
+  .card.today.logged { border-color:var(--line); border-left:3px solid var(--accent); }
+  .card.link { cursor:pointer; }
+  .card .ck { font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); margin-bottom:4px; }
+  .card h3 { font-size:22px; }
+  .card .mtags { margin-top:8px; }
+  .exlist { display:flex; gap:6px; margin-top:12px; align-items:center; }
+  .exlist img { width:52px; height:52px; border-radius:6px; object-fit:cover; background:var(--surface-2); }
+  .exlist .more { font-family:var(--num); font-size:16px; color:var(--dim); padding-left:4px; }
+  .rrow { font-size:15px; }
+  .rrow b { font-family:var(--num); font-size:22px; font-weight:600; }
+  .rrow b.up { color:var(--ok); }
+  .stat[data-go] { cursor:pointer; }
+
   /* week strip */
   .weekstrip { display:flex; gap:5px; padding:14px 8px 0; align-items:stretch; }
   .wd { flex:1; text-align:center; padding:8px 0 9px; border-radius:5px; background:var(--surface); border:1px solid transparent; cursor:pointer; font-size:11px; color:var(--dim); box-shadow:var(--shadow); }
@@ -689,7 +704,7 @@ function isoWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.ge
 const daysBetween = (a,b) => Math.round((parse(b)-parse(a))/864e5);
 
 let DB = { sessions:{}, targets:{}, weights:[], active:null, block:null, swaps:{}, sessionSwaps:{}, settings:{ theme:"venice", program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } };
-let menuOpen=false, pickOpen=false, swapOpen=null, swapKeep=false, startSheet=null, blockDone=false, clockTimer=null, demoOpen={}, DEMO_CACHE={}, view="train", sub="map", cursor=new Date(), openEx=null, draft={}, coreDone=false, statPick=null, review=null, selMuscle=null, toastMsg=null;
+let menuOpen=false, pickOpen=false, swapOpen=null, swapKeep=false, startSheet=null, blockDone=false, clockTimer=null, demoOpen={}, DEMO_CACHE={}, view="home", sub="map", cursor=new Date(), openEx=null, draft={}, coreDone=false, statPick=null, review=null, selMuscle=null, toastMsg=null;
 
 function load(){
   try {
@@ -891,11 +906,13 @@ function cardioFor(dayKey){
 function render(){
   const app = document.getElementById("app");
   let h = "";
+  if (view==="home") h = renderHome();
   if (view==="train") h = renderTrain();
   if (view==="body")  h = renderBody();
   if (view==="progress") h = renderProgress();
   if (view==="settings") h = renderSettings();
   const NAV = [
+    ["home","Home",'<svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>'],
     ["train","Train",'<svg viewBox="0 0 24 24"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>'],
     ["body","Body",'<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><path d="M8 10h8l-1 6h-6zM9 16l-1 5M15 16l1 5M8 10l-3 3M16 10l3 3"/></svg>'],
     ["progress","Progress",'<svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-8"/><path d="M15 7h5v5"/></svg>'],
@@ -912,6 +929,70 @@ function render(){
   else if (startSheet) h += renderStart();
   if (toastMsg) h += `<div class="toast">${toastMsg}</div>`;
   app.innerHTML = h; bind();
+}
+
+
+// ── Home ───────────────────────────────────────────────────────────────
+function renderHome(){
+  const now=new Date(), today=iso(now), hr=now.getHours();
+  const greet = hr<12 ? "Morning" : hr<17 ? "Afternoon" : "Evening";
+  const slot=slotFor(today), P=prog(), day=P.days[slot.key]||{name:"Rest day",rest:true,ex:[]}, saved=DB.sessions[today], bi=blockInfo(), st=streakInfo();
+  const active = DB.active && DB.active.date===today;
+  let h = `<div class="pad" style="padding-bottom:6px">
+    <div class="muted">${DOW[now.getDay()]}, ${MON[now.getMonth()]} ${now.getDate()}</div>
+    <h2 style="font-size:32px">${greet}${DB.settings.name?", "+DB.settings.name:""}</h2>
+  </div>`;
+
+  // Today
+  h += `<div class="pad" style="padding-top:8px">`;
+  if (slot.none || slot.outside) {
+    h += `<div class="card"><div class="ck">${slot.none?"No program running":"Block finished"}</div><h3>Pick a program to start a block</h3>
+      <button class="primary" style="margin-top:12px" data-go="train" data-pick>Choose a program</button></div>`;
+  } else if (day.rest) {
+    h += `<div class="card"><div class="ck">Today</div><h3>${day.name}</h3>
+      ${day.core?`<div class="muted" style="margin-top:6px">${day.core}</div>`:""}
+      <div class="note plain" style="margin-top:10px"><b>Cardio:</b> ${cardioFor(slot.key)}</div>
+      ${bi&&bi.missed.length?`<button class="ghost" style="width:100%;margin-top:12px" data-go="train">Make up a missed session (${bi.missed.length})</button>`:""}</div>`;
+  } else {
+    const sm=sessionSummary(day, today, slot.deload), tags=sessionMuscles(day, today);
+    h += `<div class="card today ${saved?"logged":""}">
+      <div class="ck">${slot.sess?`Week ${slot.sess.week} · Day ${slot.sess.i+1}`:"Today"}${slot.deload?" · Deload":""}${saved?" · Logged":active?" · In progress":""}</div>
+      <h3>${day.name}</h3>
+      <div class="muted" style="margin-top:4px">${sm.ex} exercises · ${sm.sets} sets · ~${sm.min} min</div>
+      <div class="mtags">${tags.map(m=>`<span>${MUSCLES[m].n}</span>`).join("")}</div>
+      <div class="exlist">${day.ex.slice(0,4).map(sx=>{ const ex=resolveEx(sx,today); return `<img src="${DEMO_BASE}${ex.demo}/1.jpg" alt="" loading="lazy">`; }).join("")}${day.ex.length>4?`<span class="more">+${day.ex.length-4}</span>`:""}</div>
+      <button class="primary" style="margin-top:14px" data-go="train">${saved?"View session":active?"Continue workout":"Open workout"}</button></div>`;
+  }
+  if (bi) h += `<div class="blockbar" style="margin:14px 2px 0"><div class="bl"><span>${P.name} · Week ${bi.week} of ${bi.b.weeks}</span><span>${bi.done}/${bi.req} done${bi.missed.length?` · <em>${bi.missed.length} to make up</em>`:""}</span></div><div class="bar"><i style="width:${Math.round(bi.done/bi.req*100)}%"></i></div></div>`;
+  h += `</div>`;
+
+  // Stats
+  const dates=Object.keys(DB.sessions).sort(); const since = dates.length ? daysBetween(dates[dates.length-1], today) : null;
+  h += `<div class="pad" style="padding-top:4px"><div class="statrow">
+    <div class="stat" data-go="progress" data-sub="history"><div class="v ${st.weeks?"up":""}">${st.weeks}</div><div class="k">Week streak</div></div>
+    <div class="stat" data-go="progress" data-sub="history"><div class="v ${st.goal&&st.thisWeek>=st.goal?"up":""}">${st.thisWeek}<span style="font-size:17px;color:var(--dim)">/${st.goal||"—"}</span></div><div class="k">This week</div></div>
+    <div class="stat" data-go="body" data-sub="recovery"><div class="v">${since===null?"—":since}</div><div class="k">Days since lift</div></div></div>`;
+
+  // Recovery
+  const rec=recoveryStats(), ready=Object.keys(rec).filter(m=>rec[m].level===3), recov=Object.keys(rec).filter(m=>rec[m].level===1);
+  h += `<div class="card link" data-go="body" data-sub="recovery"><div class="ck">Recovery</div>
+    <div class="rrow"><b class="up">${ready.length}</b> ready${recov.length?` · <b style="color:var(--accent-2)">${recov.length}</b> still recovering`:""}</div>
+    ${recov.length?`<div class="muted" style="margin-top:4px">Recovering: ${recov.slice(0,4).map(m=>MUSCLES[m].n).join(", ")}${recov.length>4?"…":""}</div>`:`<div class="muted" style="margin-top:4px">Everything's fresh.</div>`}</div>`;
+
+  // Last session
+  if (dates.length) { const d=dates[dates.length-1], sx=DB.sessions[d], dn=P.days[sx.day]; let sets=0,vol=0,prs=0;
+    for (const id in (sx.ex||{})) { const top=sx.ex[id][0]; for (const x of sx.ex[id]) if (x.r){ sets++; vol+=(x.w||0)*x.r; } const b=bestFor(id, d); const e=top&&e1rm(top.w,top.r); if (e&&b&&e>b.e) prs++; }
+    h += `<div class="card link" data-go="progress" data-sub="history"><div class="ck">Last session · ${fmtDate(d)}</div><h3 style="font-size:17px">${dn?dn.name:sx.day}</h3>
+      <div class="muted" style="margin-top:4px">${sets} sets · ${vol>=1000?(vol/1000).toFixed(1)+"k":vol} lbs${sx.dur?" · "+mmss(sx.dur):""}${prs?` · <span style="color:var(--accent)">${prs} new best${prs===1?"":"s"}</span>`:""}</div></div>`; }
+
+  // Check-in
+  const ws=DB.weights.filter(x=>x.w).sort((a,b)=>a.date<b.date?-1:1); const lastW=ws[ws.length-1];
+  const stale = !lastW || daysBetween(lastW.date, today)>=7;
+  h += `<div class="card link" data-go="progress" data-sub="checkin"><div class="ck">Check-in</div>
+    ${lastW?`<div class="rrow"><b>${fmt(lastW.w)}</b> lbs · ${fmtDate(lastW.date)}${DB.settings.goalWeight?` · ${fmt(lastW.w-DB.settings.goalWeight)} to goal`:""}</div>`:`<div class="rrow">No weigh-ins yet</div>`}
+    ${stale?`<div class="muted" style="margin-top:4px;color:var(--accent)">Time to weigh in — same conditions as last time.</div>`:""}</div>`;
+  h += `</div>`;
+  return h;
 }
 
 // ── Train ──────────────────────────────────────────────────────────────
@@ -1239,7 +1320,9 @@ function bind(){
   const bg=$("#burger"); if (bg) bg.onclick=()=>{ menuOpen=!menuOpen; render(); };
   $$("[data-menuclose]").forEach(b=>b.onclick=()=>{ menuOpen=false; render(); });
   $$("[data-tab]").forEach(b=>b.onclick=()=>{ menuOpen=false; view=b.dataset.tab; sub = view==="body"?"map": view==="progress"?"lifts":sub; selMuscle=null; render(); });
-  $$("[data-sub]").forEach(b=>b.onclick=()=>{ sub=b.dataset.sub; selMuscle=null; render(); });
+  $$("[data-go]").forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); view=b.dataset.go; if (b.dataset.sub) sub=b.dataset.sub; else sub = view==="body"?"map": view==="progress"?"lifts":sub;
+    if (view==="train") { cursor=new Date(); openEx=null; draft={}; coreDone=false; if (b.hasAttribute("data-pick")) pickOpen=true; } selMuscle=null; render(); });
+  $$("[data-sub]:not([data-go])").forEach(b=>b.onclick=()=>{ sub=b.dataset.sub; selMuscle=null; render(); });
   $$("[data-goto]").forEach(b=>b.onclick=()=>{ cursor=parse(b.dataset.goto); view="train"; openEx=null; draft={}; coreDone=false; render(); });
   $$("[data-open]").forEach(b=>b.onclick=()=>{ const id=b.dataset.open;
     if (openEx!==id){ const ds=iso(cursor), sv=DB.sessions[ds], slot=slotFor(ds), day=prog().days[slot.key], se=day?.ex?.find(x=>x.id===id); const lib=se?resolveEx(se,ds).lib:id;
@@ -1338,7 +1421,7 @@ function importData(file){ const fr=new FileReader(); fr.onload=()=>{ try { cons
 load(); render();
 (function(){
   const start=Date.now(), MIN=1500, el=document.getElementById("splash");
-  const done=()=>{ const wait=Math.max(0, MIN-(Date.now()-start)); setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),500); }, wait); };
+  const done=()=>{ if (!el) return; const wait=Math.max(0, MIN-(Date.now()-start)); setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),500); }, wait); };
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(done); else done();
 })();
 </script>
