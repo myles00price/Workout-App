@@ -165,6 +165,14 @@
   .pjnum b { font-family:var(--num); font-size:22px; font-weight:600; }
   .pjnum b.up { color:var(--accent); }
   .pjnum small { display:block; font-size:10.5px; color:var(--dim); }
+  .odgroups { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .odgroups button { background:var(--surface); border:1px solid var(--line); color:var(--dim); border-radius:20px; padding:7px 13px; font-size:13px; font-weight:500; }
+  .odgroups button.on { border-color:var(--accent); color:var(--ink); background:var(--surface-2); }
+  .odcard { width:100%; display:flex; gap:12px; align-items:center; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:10px; margin-bottom:8px; color:var(--ink); }
+  .odcard b { display:block; font-family:var(--num); font-size:20px; font-weight:600; }
+  .odcard span { display:block; font-size:12.5px; color:var(--dim); margin-top:2px; }
+  .odimgs { display:flex; flex-shrink:0; }
+  .odimgs img { width:40px; height:40px; border-radius:5px; object-fit:cover; background:var(--surface-2); margin-right:-8px; border:2px solid var(--surface); }
   .rrow { font-size:15px; }
   .rrow b { font-family:var(--num); font-size:22px; font-weight:600; }
   .rrow b.up { color:var(--ok); }
@@ -455,6 +463,21 @@ const LIB = {
   backext:    { n:"Back extension",                mus:["glutes","hams","lowback"], eq:"bodyweight",demo:"Hyperextensions_Back_Extensions" },
   pullthrough:{ n:"Cable pull-through",            mus:["glutes","hams"],           eq:"cable",     demo:"Pull_Through" },
   sumo:       { n:"Sumo deadlift",                 mus:["glutes","quads","hams","lowback"], eq:"barbell", demo:"Sumo_Deadlift" },
+  // core
+  cablecrunch:{ n:"Cable crunch",                  mus:["abs"],                     eq:"cable",     demo:"Cable_Crunch" },
+  crunchmach: { n:"Seated crunch machine",         mus:["abs"],                     eq:"machine",   demo:"Ab_Crunch_Machine" },
+  legraise:   { n:"Captain's chair leg raise",     mus:["abs"],                     eq:"bodyweight",demo:"Hanging_Leg_Raise" },
+  lyingraise: { n:"Lying leg raise",               mus:["abs"],                     eq:"bodyweight",demo:"Flat_Bench_Lying_Leg_Raise" },
+  revcrunch:  { n:"Reverse crunch",                mus:["abs"],                     eq:"bodyweight",demo:"Cable_Reverse_Crunch" },
+  declcrunch: { n:"Decline crunch",                mus:["abs"],                     eq:"bodyweight",demo:"Decline_Crunch" },
+  abroller:   { n:"Ab wheel rollout",              mus:["abs","obliques"],          eq:"bodyweight",demo:"Ab_Roller" },
+  plank:      { n:"Plank",                         mus:["abs","obliques"],          eq:"bodyweight",demo:"Plank" },
+  deadbug:    { n:"Dead bug",                      mus:["abs"],                     eq:"bodyweight",demo:"Dead_Bug" },
+  pallof:     { n:"Pallof press",                  mus:["obliques","abs"],          eq:"cable",     demo:"Pallof_Press" },
+  cablerot:   { n:"Cable Russian twist",           mus:["obliques"],                eq:"cable",     demo:"Cable_Russian_Twists" },
+  sidebend:   { n:"Cable side bend",               mus:["obliques"],                eq:"cable",     demo:"One-Arm_High-Pulley_Cable_Side_Bends" },
+  oblcrunch:  { n:"Decline oblique crunch",        mus:["obliques","abs"],          eq:"bodyweight",demo:"Decline_Oblique_Crunch" },
+  farmers:    { n:"Farmer's carry",                mus:["forearms","traps","abs"],  eq:"dumbbell",  demo:"Farmers_Walk" },
   // calves
   calf:       { n:"Seated calf raise",             mus:["calves"],                  eq:"machine",   demo:"Seated_Calf_Raise" },
   standcalf:  { n:"Standing calf raise",           mus:["calves"],                  eq:"machine",   demo:"Standing_Calf_Raises" },
@@ -683,6 +706,43 @@ const PROGRAMS = {
   }
 };
 
+
+// ═══════════════════════════════════════════════════════════════════════
+//  ON-DEMAND WORKOUTS — one-off sessions by muscle group, outside any block
+// ═══════════════════════════════════════════════════════════════════════
+const OD_GROUPS = [["chest","Chest"],["shoulders","Shoulders"],["back","Back"],["arms","Arms"],["legs","Legs"],["glutes","Glutes"],["core","Core"]];
+const X = (id, lib, sets, lo, hi, inc, extra={}) => Object.assign({ id, lib, sets, r:lo, lo, hi, inc, w:null }, extra);
+const OD = {
+  // chest
+  od_slab:     { g:"chest", name:"Slab", tag:"Heavy pressing, thick chest", ex:[ X("od_slab1","bench",4,6,8,5), X("od_slab2","incdb",3,8,10,5), X("od_slab3","dips",3,8,12,0), X("od_slab4","pecdeck",3,12,15,10), X("od_slab5","pushup",2,12,20,0) ] },
+  od_armor:    { g:"chest", name:"Plate Armor", tag:"Upper chest and inner line", ex:[ X("od_ar1","incbb",4,6,10,5), X("od_ar2","lowcablefly",3,12,15,2.5), X("od_ar3","chestpress",3,10,12,10), X("od_ar4","incfly",3,12,15,5), X("od_ar5","cablefly",3,12,15,2.5, {drop:true}) ] },
+  od_wide:     { g:"chest", name:"Wide Load", tag:"Dumbbells and cables, stretch-focused", ex:[ X("od_wl1","dbbench",4,8,12,5), X("od_wl2","dbfly",3,10,15,5), X("od_wl3","incdb",3,10,12,5), X("od_wl4","cablefly",3,12,15,2.5), X("od_wl5","pushup",3,10,20,0) ] },
+  // shoulders
+  od_boulder:  { g:"shoulders", name:"Boulder Shoulders", tag:"Press heavy, then raise until they burn", ex:[ X("od_bo1","dbpress",4,6,10,5), X("od_bo2","lateral",4,12,15,2.5), X("od_bo3","cablelat",3,12,15,2.5), X("od_bo4","reardelt",3,15,20,5), X("od_bo5","facepull",3,15,20,5) ] },
+  od_cannon:   { g:"shoulders", name:"Cannonballs", tag:"Side delts from every angle", ex:[ X("od_ca1","machpress",3,10,12,10), X("od_ca2","seatedlat",4,12,15,2.5), X("od_ca3","cablelat",3,15,20,2.5), X("od_ca4","lateral",3,15,20,2.5, {drop:true}), X("od_ca5","cablerear",3,15,20,5) ] },
+  od_capped:   { g:"shoulders", name:"Capped", tag:"Barbell overhead and rear delts", ex:[ X("od_cp1","bbohp",4,5,8,5), X("od_cp2","arnold",3,8,12,5), X("od_cp3","lateral",3,12,15,2.5), X("od_cp4","revfly",3,15,20,10), X("od_cp5","dbshrug",3,12,15,5) ] },
+  // back
+  od_wing:     { g:"back", name:"Wingspan", tag:"Width — pulldowns and pullovers", ex:[ X("od_wi1","latpull",4,8,12,10), X("od_wi2","cgrow",3,10,12,10), X("od_wi3","pullover",3,12,15,5), X("od_wi4","underlat",3,10,12,10), X("od_wi5","facepull",3,15,20,5) ] },
+  od_barn:     { g:"back", name:"Barn Door", tag:"Thickness — rows and heavy pulls", ex:[ X("od_bd1","bbrow",4,6,10,5), X("od_bd2","dbrow",3,8,12,5), X("od_bd3","tbar",3,8,12,10), X("od_bd4","rackpull",3,5,8,10), X("od_bd5","shrug",3,10,15,10) ] },
+  od_cobra:    { g:"back", name:"Cobra", tag:"Lats and rear delts, cable-heavy", ex:[ X("od_co1","cgpull",4,10,12,10), X("od_co2","cgrow",4,10,15,10), X("od_co3","dbpullover",3,12,15,5), X("od_co4","cablerear",3,15,20,5), X("od_co5","cableshrug",3,12,15,10) ] },
+  // arms
+  od_gun:      { g:"arms", name:"Gun Show", tag:"Biceps and triceps, supersets", ex:[ X("od_gu1","ezcurl",4,8,12,5), X("od_gu2","skull",4,8,12,5), X("od_gu3","inccurl",3,10,12,5), X("od_gu4","cableoh",3,10,15,5), X("od_gu5","hammer",3,10,12,5), X("od_gu6","pushdown",3,12,15,5, {drop:true}) ] },
+  od_sleeve:   { g:"arms", name:"Sleeve Splitter", tag:"Triceps-led — they're two-thirds of the arm", ex:[ X("od_sl1","cgbench",4,6,10,5), X("od_sl2","tridip",3,8,12,0), X("od_sl3","ohtri",3,10,12,5), X("od_sl4","vbarpush",3,12,15,5), X("od_sl5","cablecurl",3,10,15,5), X("od_sl6","conccurl",2,12,15,5) ] },
+  od_pipes:    { g:"arms", name:"Pipes", tag:"Biceps-led with forearms", ex:[ X("od_pi1","bbcurl",4,8,10,5), X("od_pi2","preacher",3,10,12,5), X("od_pi3","hammer",3,10,12,5), X("od_pi4","machcurl",3,12,15,10, {drop:true}), X("od_pi5","pushdown",3,12,15,5), X("od_pi6","farmers",3,8,12,5) ] },
+  // legs
+  od_trunks:   { g:"legs", name:"Tree Trunks", tag:"Quads first, heavy", ex:[ X("od_tt1","hack",4,6,10,10), X("od_tt2","legpress",3,10,12,10), X("od_tt3","legext",3,12,15,10, {drop:true}), X("od_tt4","hamcurl",3,10,12,10), X("od_tt5","standcalf",4,12,15,10) ] },
+  od_wheels:   { g:"legs", name:"Wheels", tag:"Squat pattern plus hamstrings", ex:[ X("od_wh1","bbsquat",4,5,8,10), X("od_wh2","rdl",3,8,12,10), X("od_wh3","split",3,8,12,5), X("od_wh4","legext",3,12,15,10), X("od_wh5","calf",4,12,15,10) ] },
+  od_hinge:    { g:"legs", name:"Hinge Day", tag:"Hamstrings and posterior chain", ex:[ X("od_hi1","deadlift",4,4,6,10), X("od_hi2","lyingcurl",4,10,12,10), X("od_hi3","goodmorning",3,8,12,5), X("od_hi4","backext",3,12,15,5), X("od_hi5","calfpress",4,12,15,10) ] },
+  // glutes
+  od_shelf:    { g:"glutes", name:"Shelf", tag:"Hip thrust-led, heavy", ex:[ X("od_sh1","hipthrust",4,8,12,10), X("od_sh2","rdl",3,8,12,10), X("od_sh3","split",3,8,12,5), X("od_sh4","abduct",3,15,20,10), X("od_sh5","kickback",3,12,15,5) ] },
+  od_peach:    { g:"glutes", name:"Peach", tag:"Higher reps, every angle", ex:[ X("od_pe1","legpressH",4,12,15,10), X("od_pe2","glutebridge",3,15,20,0), X("od_pe3","lunge",3,10,12,5), X("od_pe4","pullthrough",3,12,15,5), X("od_pe5","abduct",4,15,20,10, {drop:true}) ] },
+  od_drive:    { g:"glutes", name:"Hip Drive", tag:"Barbell hinge and thrust", ex:[ X("od_hd1","bbhipthrust",4,6,10,10), X("od_hd2","sumo",3,5,8,10), X("od_hd3","stepup",3,8,12,5), X("od_hd4","backext",3,12,15,5), X("od_hd5","kickback",3,12,15,5) ] },
+  // core
+  od_diamond:  { g:"core", name:"Diamond Core", tag:"Loaded abs — treat them like a muscle", ex:[ X("od_di1","cablecrunch",4,10,15,5), X("od_di2","legraise",3,10,15,0), X("od_di3","pallof",3,10,12,5), X("od_di4","abroller",3,8,12,0), X("od_di5","plank",3,30,60,0) ] },
+  od_corset:   { g:"core", name:"Corset", tag:"Obliques and the waist line", ex:[ X("od_cs1","cablerot",3,12,15,5), X("od_cs2","sidebend",3,12,15,5), X("od_cs3","oblcrunch",3,12,15,0), X("od_cs4","pallof",3,10,12,5), X("od_cs5","deadbug",3,8,10,0) ] },
+  od_ironclad: { g:"core", name:"Ironclad", tag:"Anti-extension and carries", ex:[ X("od_ic1","abroller",4,8,12,0), X("od_ic2","farmers",4,8,12,5), X("od_ic3","deadbug",3,8,10,0), X("od_ic4","revcrunch",3,12,15,0), X("od_ic5","crunchmach",3,12,15,10) ] },
+};
+
 const SEEDS = {
   myles: { label:"Myles — Aug/Sep 2026 logs", targets: {
     bench:{w:195,r:8}, cgrow:{w:100,r:12}, incdb:{w:90,r:6}, latpull:{w:100,r:10}, incfly:{w:30,r:10}, dbpress:{w:60,r:8}, lateral:{w:22.5,r:10}, ohtri:{w:60,r:8}, cablecurl:{w:32.5,r:12}, hammer:{w:30,r:12}, reardelt:{w:15,r:10}, incdbB:{w:80,r:10}, bbrow:{w:95,r:10}, cablefly:{w:17.5,r:10}, pullover:{w:42.5,r:12}, shrug:{w:155,r:10}, lateralB:{w:22.5,r:15}, hammerB:{w:30,r:10}, reardeltB:{w:15,r:15}
@@ -711,8 +771,8 @@ const fmtDate = s => { const d=parse(s); return `${MON[d.getMonth()]} ${d.getDat
 function isoWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7)); return Math.ceil(((t-Date.UTC(t.getUTCFullYear(),0,1))/864e5+1)/7); }
 const daysBetween = (a,b) => Math.round((parse(b)-parse(a))/864e5);
 
-let DB = { sessions:{}, targets:{}, weights:[], active:null, block:null, swaps:{}, sessionSwaps:{}, settings:{ theme:"venice", program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } };
-let menuOpen=false, pickOpen=false, swapOpen=null, swapKeep=false, startSheet=null, blockDone=false, clockTimer=null, demoOpen={}, DEMO_CACHE={}, view="home", sub="map", cursor=new Date(), openEx=null, draft={}, coreDone=false, statPick=null, review=null, selMuscle=null, toastMsg=null;
+let DB = { sessions:{}, targets:{}, weights:[], active:null, block:null, swaps:{}, sessionSwaps:{}, onDemand:{}, settings:{ theme:"venice", program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } };
+let menuOpen=false, pickOpen=false, odOpen=false, odGroup=null, swapOpen=null, swapKeep=false, startSheet=null, blockDone=false, clockTimer=null, demoOpen={}, DEMO_CACHE={}, view="home", sub="map", cursor=new Date(), openEx=null, draft={}, coreDone=false, statPick=null, review=null, selMuscle=null, toastMsg=null;
 
 function load(){
   try {
@@ -723,7 +783,7 @@ function load(){
       if (old) { const o = JSON.parse(old); DB.sessions = o.sessions||{}; DB.targets = o.targets||{}; }
     }
   } catch(e){}
-  DB.sessions ||= {}; DB.targets ||= {}; DB.weights ||= []; DB.active ||= null; DB.block ||= null; DB.swaps ||= {}; DB.sessionSwaps ||= {};
+  DB.sessions ||= {}; DB.targets ||= {}; DB.weights ||= []; DB.active ||= null; DB.block ||= null; DB.swaps ||= {}; DB.sessionSwaps ||= {}; DB.onDemand ||= {};
   for (const d in DB.sessions) { const r=DB.sessions[d]; for (const f of ["ex","tank"]) { if (!r[f]) continue; const o={}; for (const k in r[f]) o[MIGRATE[k]||k]=r[f][k]; r[f]=o; } }
   if (!DB.block && Object.keys(DB.sessions).length) {          // migrate: wrap existing sessions in a block
     const first = Object.keys(DB.sessions).sort()[0]; const m = mondayOf(parse(first));
@@ -749,7 +809,9 @@ function startBlock(programKey, startDate, save=true){
   DB.settings.program=programKey; DB.active=null;
   if (save) persist();
 }
+function dayOf(slot){ return slot.od ? Object.assign({ name:slot.od.name, core:null, ex:slot.od.ex, od:true }, {}) : (prog().days[slot.key] || { name:"Rest day", rest:true, ex:[] }); }
 function slotFor(ds){
+  const odId = DB.onDemand[ds]; if (odId && OD[odId]) return { key:"od:"+odId, od:OD[odId], sess:null };
   const b=DB.block; if (!b) return { key:"off", none:true };
   const P=PROGRAMS[b.program];
   const mk=Object.entries(b.makeups).find(([i,d])=>d===ds);
@@ -951,6 +1013,7 @@ function streakInfo(){
 }
 
 function cardioFor(dayKey){
+  if (String(dayKey).startsWith("od:")) return "Optional. 10–15 min incline walk after if you want it; skip anything that competes with tomorrow's session.";
   const day = prog().days[dayKey];
   if (day.optional) return "This day is optional. If you're in, finish with 15–20 min incline walking. If legs are still sore from Thursday, take the walk and skip the lifts.";
   if (dayKey==="recovery") return "30–45 min walk at conversational pace. Nothing that leaves you sore — the point of today is arriving at tomorrow fresher.";
@@ -984,6 +1047,7 @@ function render(){
   if (!DB.settings.onboarded) h += renderOnboard();
   else if (review) h += renderReview();
   else if (blockDone) h += renderBlockDone();
+  else if (odOpen) h += renderOnDemand();
   else if (startSheet) h += renderStart();
   if (toastMsg) h += `<div class="toast">${toastMsg}</div>`;
   app.innerHTML = h; bind();
@@ -1024,6 +1088,10 @@ function renderHome(){
   if (bi) h += `<div class="blockbar" style="margin:14px 2px 0"><div class="bl"><span>${P.name} · Week ${bi.week} of ${bi.b.weeks}</span><span>${bi.done}/${bi.req} done${bi.missed.length?` · <em>${bi.missed.length} to make up</em>`:""}</span></div><div class="bar"><i style="width:${Math.round(bi.done/bi.req*100)}%"></i></div></div>`;
   h += `</div>`;
 
+  // On demand
+  h += `<div class="pad" style="padding-top:0"><div class="card link" data-odpick><div class="ck">On demand</div>
+    <div class="rrow">Extra session by muscle group</div><div class="muted" style="margin-top:4px">${Object.values(OD).slice(0,6).map(o=>o.name).join(" · ")} and more</div></div></div>`;
+
   // Stats
   const dates=Object.keys(DB.sessions).sort(); const since = dates.length ? daysBetween(dates[dates.length-1], today) : null;
   h += `<div class="pad" style="padding-top:4px"><div class="statrow">
@@ -1050,7 +1118,7 @@ function renderHome(){
     ${recov.length?`<div class="muted" style="margin-top:4px">Recovering: ${recov.slice(0,4).map(m=>MUSCLES[m].n).join(", ")}${recov.length>4?"…":""}</div>`:`<div class="muted" style="margin-top:4px">Everything's fresh.</div>`}</div>`;
 
   // Last session
-  if (dates.length) { const d=dates[dates.length-1], sx=DB.sessions[d], dn=P.days[sx.day]; let sets=0,vol=0,prs=0;
+  if (dates.length) { const d=dates[dates.length-1], sx=DB.sessions[d], dn=sx.day.startsWith("od:") ? OD[sx.day.slice(3)] : P.days[sx.day]; let sets=0,vol=0,prs=0;
     for (const id in (sx.ex||{})) { const top=sx.ex[id][0]; for (const x of sx.ex[id]) if (x.r){ sets++; vol+=(x.w||0)*x.r; } const b=bestFor(id, d); const e=top&&e1rm(top.w,top.r); if (e&&b&&e>b.e) prs++; }
     h += `<div class="card link" data-go="progress" data-sub="history"><div class="ck">Last session · ${fmtDate(d)}</div><h3 style="font-size:17px">${dn?dn.name:sx.day}</h3>
       <div class="muted" style="margin-top:4px">${sets} sets · ${vol>=1000?(vol/1000).toFixed(1)+"k":vol} lbs${sx.dur?" · "+mmss(sx.dur):""}${prs?` · <span style="color:var(--accent)">${prs} new best${prs===1?"":"s"}</span>`:""}</div></div>`; }
@@ -1067,13 +1135,13 @@ function renderHome(){
 
 // ── Train ──────────────────────────────────────────────────────────────
 function renderTrain(){
-  const ds=iso(cursor), today=iso(new Date()), slot=slotFor(ds), key=slot.key, day=prog().days[key]||{name:"Rest day",rest:true,ex:[]}, saved=DB.sessions[ds];
+  const ds=iso(cursor), today=iso(new Date()), slot=slotFor(ds), key=slot.key, day=dayOf(slot), saved=DB.sessions[ds];
   const active = DB.active && DB.active.date===ds ? DB.active : null;
   const bi=blockInfo();
 
   let h = `<header class="head">
     <div class="date">${DB.settings.name?DB.settings.name+" · ":""}${DOW[cursor.getDay()]}, ${MON[cursor.getMonth()]} ${cursor.getDate()}${ds===today?" · today":""}</div>
-    ${slot.sess ? `<div class="daynum">Week ${slot.sess.week} · Day ${slot.sess.i+1}${slot.sess.deload?" · Deload":""}</div>` : ""}
+    ${slot.sess ? `<div class="daynum">Week ${slot.sess.week} · Day ${slot.sess.i+1}${slot.sess.deload?" · Deload":""}</div>` : slot.od ? `<div class="daynum">On demand · ${OD_GROUPS.find(g=>g[0]===slot.od.g)[1]}</div>` : ""}
     <h1>${slot.none ? "No program running" : slot.outside ? "Outside your block" : day.name}</h1>
     <div class="sub">${slot.none ? "Pick a program below to start a block." : slot.outside ? (ds>DB.block.end ? "Your block has ended. Start the next one below." : "Your block starts "+fmtDate(DB.block.start)+".") : day.rest ? "No lifting scheduled." : (()=>{ const sm=sessionSummary(day, ds, slot.deload); return `${sm.ex} exercises · ${sm.sets} sets · ~${sm.min} min${slot.makeup?" · make-up":""}${day.optional?" · optional":""}${saved?" · logged":""}`; })()}</div>
     ${!day.rest && !slot.none && !slot.outside ? `<div class="mtags">${sessionMuscles(day, ds).map(m=>`<span>${MUSCLES[m].n}</span>`).join("")}</div>` : ""}
@@ -1101,8 +1169,10 @@ function renderTrain(){
       bi.missed.map(x=>`<button class="ghost makeup" data-makeup="${x.i}"><b>${PROGRAMS[bi.b.program].days[x.day].name}</b><span>Week ${x.week} · was ${fmtDate(x.date)}</span></button>`).join("");
     if (day.core) h += `<div class="note plain">${day.core}</div>`;
     if (!slot.none && !slot.outside) h += `<div class="note plain" style="margin-top:10px"><b>Cardio:</b> ${cardioFor(key)}</div>`;
+    h += `<button class="ghost" style="width:100%;margin-top:14px" data-odpick>Add an on-demand workout</button>`;
     h += `</div>`; return h;
   }
+  if (slot.od && !saved) h += `<div class="pad" style="padding-bottom:0"><div class="note plain">${slot.od.tag}. <span data-unod style="color:var(--accent-2);cursor:pointer">Remove from today</span></div></div>`;
   if (slot.deload) h += `<div class="pad" style="padding-bottom:0"><div class="note"><b>Deload week.</b> Same weights, two working sets per exercise. Targets hold this week. This is where the growth from the last three weeks actually shows up.</div></div>`;
   if (slot.makeup) h += `<div class="pad" style="padding-bottom:0"><div class="note plain">Making up ${day.name} from week ${slot.sess.week}. <span data-unmakeup="${slot.sess.i}" style="color:var(--accent-2);cursor:pointer">Undo</span></div></div>`;
 
@@ -1279,7 +1349,7 @@ function renderHistory(){
     <div class="stat"><div class="v ${st.goal&&st.thisWeek>=st.goal?"up":""}">${st.thisWeek}<span style="font-size:17px;color:var(--dim)">/${st.goal||"—"}</span></div><div class="k">This week</div></div>
     <div class="stat"><div class="v ${st.weeks?"up":""}">${st.weeks}</div><div class="k">Week streak</div></div></div>`;
   if (!dates.length) return head + `<div class="empty">No saved sessions yet.</div>`;
-  return head + `<div class="hist">` + dates.map(d=>{ const s=DB.sessions[d], day=prog().days[s.day]; let sets=0,reps=0,vol=0;
+  return head + `<div class="hist">` + dates.map(d=>{ const s=DB.sessions[d], day=s.day.startsWith("od:") ? OD[s.day.slice(3)] : prog().days[s.day]; let sets=0,reps=0,vol=0;
     for (const id in (s.ex||{})) for (const x of s.ex[id]) if (x.r){ sets++; reps+=x.r; vol+=(x.w||0)*x.r; }
     return `<div class="hrow" data-goto="${d}"><div class="d">${fmtDate(d)}</div><div style="flex:1">${day?day.name:s.day}<div class="sub muted">${sets} sets · ${reps} reps${s.dur?" · "+mmss(s.dur):""}${s.core?" · core":""}</div></div><div class="s">${vol>=1000?(vol/1000).toFixed(1)+"k":vol}<span style="font-size:11px;color:var(--dim)"> lbs</span></div></div>`; }).join("") + `</div>`;
 }
@@ -1370,6 +1440,21 @@ function renderBlockDone(){
     <div class="bkrow"><button class="primary" data-again>Run it again</button><button class="ghost" data-another>Pick another</button></div></div></div>`;
 }
 
+// ── On-demand picker ───────────────────────────────────────────────────
+function renderOnDemand(){
+  const g = odGroup;
+  const list = Object.entries(OD).filter(([k,o])=>!g || o.g===g);
+  return `<div class="modal" data-odclose><div class="sheet" onclick="event.stopPropagation()">
+    <div class="ck" style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)">On demand</div>
+    <h2>${g ? OD_GROUPS.find(x=>x[0]===g)[1] : "Pick a muscle group"}</h2>
+    <p class="lede" style="margin-top:6px">One-off sessions outside your block. They log and progress like anything else.</p>
+    <div class="odgroups">${OD_GROUPS.map(([k,l])=>`<button class="${g===k?"on":""}" data-odgroup="${k}">${l}</button>`).join("")}</div>
+    ${g ? list.map(([k,o])=>`<button class="odcard" data-od="${k}">
+      <div class="odimgs">${o.ex.slice(0,3).map(x=>`<img src="${DEMO_BASE}${LIB[x.lib].demo}/1.jpg" alt="" loading="lazy">`).join("")}</div>
+      <div><b>${o.name}</b><span>${o.tag}</span><span class="muted">${o.ex.length} exercises · ${o.ex.reduce((a,x)=>a+x.sets,0)} sets</span></div></button>`).join("") : ""}
+    <button class="ghost" style="width:100%;margin-top:8px" data-odclose>Cancel</button></div></div>`;
+}
+
 // ── Settings ───────────────────────────────────────────────────────────
 function renderSettings(){
   const s=DB.settings;
@@ -1401,7 +1486,7 @@ function bind(){
   $$("[data-sub]:not([data-go])").forEach(b=>b.onclick=()=>{ sub=b.dataset.sub; selMuscle=null; render(); });
   $$("[data-goto]").forEach(b=>b.onclick=()=>{ cursor=parse(b.dataset.goto); view="train"; openEx=null; draft={}; coreDone=false; render(); });
   $$("[data-open]").forEach(b=>b.onclick=()=>{ const id=b.dataset.open;
-    if (openEx!==id){ const ds=iso(cursor), sv=DB.sessions[ds], slot=slotFor(ds), day=prog().days[slot.key], se=day?.ex?.find(x=>x.id===id); const lib=se?resolveEx(se,ds).lib:id;
+    if (openEx!==id){ const ds=iso(cursor), sv=DB.sessions[ds], slot=slotFor(ds), day=dayOf(slot), se=day?.ex?.find(x=>x.id===id); const lib=se?resolveEx(se,ds).lib:id;
       if (sv?.ex?.[lib] && !draft[id]) draft[id]=sv.ex[lib].map(s=>({...s})); if (sv?.tank?.[lib]!==undefined){ draft.__tank ||= {}; draft.__tank[id] ??= sv.tank[lib]; } }
     swapOpen=null;
     openEx = openEx===id?null:id; render(); });
@@ -1445,11 +1530,18 @@ function bind(){
     if (!has && !confirm("Nothing logged yet. Finish anyway?")) return; saveSession(); };
   const dc=$("#discard"); if (dc) dc.onclick=()=>{ if (confirm("Discard the timer? Your entered sets stay.")) { DB.active=null; persist(); if (clockTimer){ clearInterval(clockTimer); clockTimer=null; } render(); } };
   $$("[data-week]").forEach(b=>b.onclick=()=>{ cursor.setDate(cursor.getDate()+7*Number(b.dataset.week)); openEx=null; draft={}; coreDone=false; render(); });
-  $$("[data-demo]").forEach(b=>b.onclick=async()=>{ const id=b.dataset.demo, ds=iso(cursor), slot=slotFor(ds), day=prog().days[slot.key], ex=resolveEx(day.ex.find(x=>x.id===id), ds); demoOpen[id]=!demoOpen[id]; render(); if (demoOpen[id] && !DEMO_CACHE[ex.demo]) { await loadDemo(ex.demo); render(); } });
+  $$("[data-demo]").forEach(b=>b.onclick=async()=>{ const id=b.dataset.demo, ds=iso(cursor), slot=slotFor(ds), day=dayOf(slot), ex=resolveEx(day.ex.find(x=>x.id===id), ds); demoOpen[id]=!demoOpen[id]; render(); if (demoOpen[id] && !DEMO_CACHE[ex.demo]) { await loadDemo(ex.demo); render(); } });
+  $$("[data-odpick]").forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); odOpen=true; odGroup=null; render(); });
+  $$("[data-odclose]").forEach(b=>b.onclick=()=>{ odOpen=false; render(); });
+  $$("[data-odgroup]").forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); odGroup=b.dataset.odgroup; render(); });
+  $$("[data-od]").forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); if (view!=="train") cursor=new Date();
+    const d=iso(cursor); if (DB.sessions[d] && !DB.sessions[d].day.startsWith("od:") && !confirm("There's already a logged session on this day. Add the on-demand workout anyway?")) return;
+    DB.onDemand[d]=b.dataset.od; odOpen=false; view="train"; openEx=null; draft={}; persist(); render(); });
+  $$("[data-unod]").forEach(b=>b.onclick=()=>{ delete DB.onDemand[iso(cursor)]; persist(); render(); });
   $$("[data-swap]").forEach(b=>b.onclick=()=>{ swapOpen = swapOpen===b.dataset.swap ? null : b.dataset.swap; render(); });
   $$("[data-swapclose]").forEach(b=>b.onclick=()=>{ swapOpen=null; render(); });
   const sk=$("#swapkeep"); if (sk) sk.onchange=()=>{ swapKeep=sk.checked; };
-  $$("[data-swapto]").forEach(b=>b.onclick=()=>{ const ds=iso(cursor), slot=slotFor(ds), day=prog().days[slot.key], slotEx=day.ex.find(x=>x.id===swapOpen), to=b.dataset.swapto;
+  $$("[data-swapto]").forEach(b=>b.onclick=()=>{ const ds=iso(cursor), slot=slotFor(ds), day=dayOf(slot), slotEx=day.ex.find(x=>x.id===swapOpen), to=b.dataset.swapto;
     if (to===slotEx.lib) { delete DB.swaps[slotEx.id]; if (DB.sessionSwaps[ds]) delete DB.sessionSwaps[ds][slotEx.id]; }
     else if (swapKeep) { DB.swaps[slotEx.id]=to; if (DB.sessionSwaps[ds]) delete DB.sessionSwaps[ds][slotEx.id]; }
     else { DB.sessionSwaps[ds] ||= {}; DB.sessionSwaps[ds][slotEx.id]=to; }
@@ -1459,11 +1551,11 @@ function bind(){
     const prev=DB.weights.find(w=>w.date===d)||{}; DB.weights = DB.weights.filter(w=>w.date!==d); DB.weights.push({date:d, w:v??prev.w??null, waist:wa??prev.waist??null, hips:hp??prev.hips??null}); persist(); toast("Logged"); };
   const exp=$("#exp"); if (exp) exp.onclick=exportData;
   const imp=$("#imp"), impf=$("#impfile"); if (imp) imp.onclick=()=>impf.click(); if (impf) impf.onchange=()=>{ if(impf.files[0]) importData(impf.files[0]); };
-  const rs=$("#reset"); if (rs) rs.onclick=()=>{ if (confirm("Erase every session, target and weigh-in on this device?")) { localStorage.removeItem(KEY); localStorage.removeItem("training-log-v1"); DB={ sessions:{}, targets:{}, weights:[], active:null, block:null, swaps:{}, sessionSwaps:{}, settings:{ theme:DB.settings.theme, themeSet:DB.settings.themeSet, program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } }; persist(); render(); } };
+  const rs=$("#reset"); if (rs) rs.onclick=()=>{ if (confirm("Erase every session, target and weigh-in on this device?")) { localStorage.removeItem(KEY); localStorage.removeItem("training-log-v1"); DB={ sessions:{}, targets:{}, weights:[], active:null, block:null, swaps:{}, sessionSwaps:{}, onDemand:{}, settings:{ theme:DB.settings.theme, themeSet:DB.settings.themeSet, program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } }; persist(); render(); } };
 }
 
 function saveSession(){
-  const ds=iso(cursor), slot=slotFor(ds), key=slot.key, day=prog().days[key];
+  const ds=iso(cursor), slot=slotFor(ds), key=slot.key, day=dayOf(slot);
   const rec = DB.sessions[ds] || { day:key, ex:{}, tank:{} };
   rec.tank ||= {};
   const rows=[], prs=[]; let sets=0,reps=0,vol=0;
@@ -1493,7 +1585,7 @@ function saveSession(){
 }
 
 function exportData(){ const blob=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`${APP_NAME.toLowerCase()}-${iso(new Date())}.json`; a.click(); URL.revokeObjectURL(a.href); }
-function importData(file){ const fr=new FileReader(); fr.onload=()=>{ try { const n=JSON.parse(fr.result); if(!n.sessions) throw 0; DB={ sessions:n.sessions, targets:n.targets||{}, weights:n.weights||[], active:null, block:n.block||null, swaps:n.swaps||{}, sessionSwaps:n.sessionSwaps||{}, settings:Object.assign(DB.settings,n.settings||{}) }; load(); persist(); document.documentElement.dataset.theme=DB.settings.theme; toast("Backup restored"); } catch(e){ toast("That file isn't a "+APP_NAME+" backup."); } }; fr.readAsText(file); }
+function importData(file){ const fr=new FileReader(); fr.onload=()=>{ try { const n=JSON.parse(fr.result); if(!n.sessions) throw 0; DB={ sessions:n.sessions, targets:n.targets||{}, weights:n.weights||[], active:null, block:n.block||null, swaps:n.swaps||{}, sessionSwaps:n.sessionSwaps||{}, onDemand:n.onDemand||{}, settings:Object.assign(DB.settings,n.settings||{}) }; load(); persist(); document.documentElement.dataset.theme=DB.settings.theme; toast("Backup restored"); } catch(e){ toast("That file isn't a "+APP_NAME+" backup."); } }; fr.readAsText(file); }
 
 load(); render();
 (function(){
