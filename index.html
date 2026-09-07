@@ -8,14 +8,21 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Granite">
-<meta name="theme-color" content="#16191D">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%2316191D'/%3E%3Crect x='28' y='78' width='124' height='24' rx='4' fill='%23D9A441'/%3E%3Crect x='16' y='62' width='22' height='56' rx='5' fill='%23ECEEF1'/%3E%3Crect x='142' y='62' width='22' height='56' rx='5' fill='%23ECEEF1'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23000000'/%3E%3Crect x='28' y='78' width='124' height='24' rx='4' fill='%23E8B923'/%3E%3Crect x='16' y='62' width='22' height='56' rx='5' fill='%23ECEEF1'/%3E%3Crect x='142' y='62' width='22' height='56' rx='5' fill='%23ECEEF1'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Big+Shoulders+Display:wght@800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
   /* ── Themes ─────────────────────────────────────────────────────── */
+  html[data-theme="venice"] {
+    --ground:#000000; --surface:#111111; --surface-2:#1A1A1A; --line:#262626;
+    --ink:#F7F7F7; --dim:#9C9C9C; --dimmer:#5A5A5A;
+    --accent:#E8B923; --accent-ink:#000000; --accent-2:#E03131;
+    --ok:#E8B923; --warn:#F7F7F7; --bad:#E03131;
+    --shadow:none;
+  }
   html[data-theme="iron"] {
     --ground:#16191D; --surface:#1F242A; --surface-2:#272D35; --line:#343C46;
     --ink:#ECEEF1; --dim:#8E98A5; --dimmer:#5C6674;
@@ -144,7 +151,7 @@
   /* top bar + drawer */
   #app { padding-top:54px; }
   .topbar { position:fixed; top:0; left:0; right:0; max-width:560px; margin:0 auto; height:54px; display:grid; grid-template-columns:44px 1fr 44px; align-items:center; padding:0 6px; background:color-mix(in srgb,var(--ground) 92%,transparent); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-bottom:1px solid var(--line); z-index:8; padding-top:env(safe-area-inset-top); box-sizing:content-box; }
-  .topbar .brand { grid-column:2; text-align:center; font-family:'Big Shoulders Display',var(--num); font-size:26px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; line-height:1; }
+  .topbar .brand { grid-column:2; text-align:center; font-family:'Big Shoulders Display',var(--num); font-size:26px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; line-height:1; color:var(--accent); }
   .topbar .brand span { display:block; font-family:var(--body); font-size:11px; font-weight:500; color:var(--dim); letter-spacing:.02em; text-transform:none; margin-top:2px; }
   .topbar .burger { grid-column:3; }
   .burger { width:44px; height:44px; border:none; background:none; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:5px; border-radius:6px; }
@@ -342,7 +349,7 @@ const fmtDate = s => { const d=parse(s); return `${MON[d.getMonth()]} ${d.getDat
 function isoWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7)); return Math.ceil(((t-Date.UTC(t.getUTCFullYear(),0,1))/864e5+1)/7); }
 const daysBetween = (a,b) => Math.round((parse(b)-parse(a))/864e5);
 
-let DB = { sessions:{}, targets:{}, weights:[], active:null, settings:{ theme:"iron", program:"arnold", goalWeight:null, name:"" } };
+let DB = { sessions:{}, targets:{}, weights:[], active:null, settings:{ theme:"venice", program:"arnold", goalWeight:null, name:"" } };
 let menuOpen=false, clockTimer=null, demoOpen={}, DEMO_CACHE={}, view="train", sub="map", cursor=new Date(), openEx=null, draft={}, coreDone=false, statPick=null, review=null, selMuscle=null, toastMsg=null;
 
 function load(){
@@ -355,7 +362,8 @@ function load(){
     }
   } catch(e){}
   DB.sessions ||= {}; DB.targets ||= {}; DB.weights ||= []; DB.active ||= null;
-  DB.settings = Object.assign({ theme:"iron", program:"arnold", goalWeight:null }, DB.settings||{});
+  DB.settings = Object.assign({ theme:"venice", program:"arnold", goalWeight:null }, DB.settings||{});
+  if (!DB.settings.themeSet) DB.settings.theme = "venice";   // new default unless the user has picked one
   document.documentElement.dataset.theme = DB.settings.theme;
 }
 function persist(){ try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e){ toast("Couldn't save. Storage may be full."); } }
@@ -703,9 +711,9 @@ function renderReview(){
 // ── Settings ───────────────────────────────────────────────────────────
 function renderSettings(){
   const s=DB.settings;
-  const sw = t => ({iron:["#16191D","#D9A441","#ECEEF1"],paper:["#F5F6F8","#B8761A","#15191E"],midnight:["#0D1424","#4FC3F7","#E6ECF7"]})[t];
+  const sw = t => ({venice:["#000000","#E8B923","#E03131"],iron:["#16191D","#D9A441","#ECEEF1"],paper:["#F5F6F8","#B8761A","#15191E"],midnight:["#0D1424","#4FC3F7","#E6ECF7"]})[t];
   return `<div class="pad"><h2>Settings</h2><p class="lede">Theme, program, goal, and backups.</p>
-    <div class="themes">${[["iron","Iron"],["paper","Paper"],["midnight","Midnight"]].map(([k,l])=>{ const c=sw(k);
+    <div class="themes">${[["venice","Venice"],["iron","Iron"],["paper","Paper"],["midnight","Midnight"]].map(([k,l])=>{ const c=sw(k);
       return `<div class="th ${s.theme===k?"on":""}" data-theme="${k}"><div class="sw" style="background:${c[0]}"><i style="background:${c[1]}"></i><i style="background:${c[2]};margin-left:3px;width:10px"></i></div>${l}</div>`; }).join("")}</div>
     <div class="row" style="margin-top:14px"><div class="k">Program<small>More get added here as we build them</small></div><select id="progpick2" style="width:auto;margin:0;padding:9px 34px 9px 12px">${Object.keys(PROGRAMS).map(k=>`<option value="${k}" ${k===s.program?"selected":""}>${PROGRAMS[k].name}</option>`).join("")}</select></div>
     <div class="row"><div class="k">Goal weight<small>Drives the pace check on the Check-in tab</small></div><input class="num" inputmode="decimal" id="goalIn" value="${s.goalWeight??""}" placeholder="—"></div>
@@ -731,7 +739,7 @@ function bind(){
   $$("[data-m]").forEach(b=>b.onclick=()=>{ selMuscle = selMuscle===b.dataset.m?null:b.dataset.m; render(); });
   const cm=$("[data-clearm]"); if (cm) cm.onclick=()=>{ selMuscle=null; render(); };
   $$("[data-close]").forEach(b=>b.onclick=()=>{ review=null; render(); });
-  $$("[data-theme]").forEach(b=>b.onclick=()=>{ DB.settings.theme=b.dataset.theme; document.documentElement.dataset.theme=DB.settings.theme; persist(); render(); });
+  $$("[data-theme]").forEach(b=>b.onclick=()=>{ DB.settings.theme=b.dataset.theme; DB.settings.themeSet=true; document.documentElement.dataset.theme=DB.settings.theme; persist(); render(); });
 
   ["progpick","progpick2"].forEach(id=>{ const el=document.getElementById(id); if (el) el.onchange=()=>{ DB.settings.program=el.value; persist(); render(); }; });
   const pick=$("#pick"); if (pick) pick.onchange=()=>{ statPick=pick.value; render(); };
