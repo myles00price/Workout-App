@@ -95,6 +95,16 @@
   .clock { font-family:var(--num); font-size:26px; font-weight:600; margin-left:auto; font-variant-numeric:tabular-nums; }
   .clockx { background:none; border:none; color:var(--dim); font-size:22px; line-height:1; padding:0 4px; }
   .howto { margin-top:12px; background:none; border:1px solid var(--line); color:var(--accent-2); border-radius:5px; padding:8px 12px; font-size:12.5px; font-weight:500; }
+  .rowbtns { display:flex; gap:8px; }
+  .swap { margin-top:12px; border:1px solid var(--accent-2); border-radius:7px; padding:10px; }
+  .swap .lbl { display:flex; justify-content:space-between; align-items:center; font-size:12.5px; color:var(--dim); margin-bottom:8px; gap:8px; flex-wrap:wrap; }
+  .swap .lbl label { display:flex; align-items:center; gap:6px; font-size:12px; }
+  .swap .lbl input { accent-color:var(--accent); }
+  .alt { width:100%; display:flex; align-items:center; gap:10px; text-align:left; background:var(--ground); border:1px solid var(--line); border-radius:6px; padding:8px; margin-bottom:6px; color:var(--ink); }
+  .alt img { width:44px; height:44px; border-radius:5px; object-fit:cover; background:var(--surface-2); flex-shrink:0; }
+  .alt b { display:block; font-size:13.5px; font-weight:600; }
+  .alt span { display:block; font-size:11.5px; color:var(--dim); }
+  .alt.back { border-color:var(--accent); }
   .demo { margin-top:10px; }
   .frames { display:flex; gap:6px; }
   .frames img { width:50%; border-radius:5px; background:var(--surface-2); aspect-ratio:4/3; object-fit:cover; }
@@ -223,6 +233,8 @@
   .m.l3 { fill:color-mix(in srgb,var(--ok) 65%,var(--surface)); }
   .m.selm { stroke:var(--ink); stroke-width:2; }
   .skin { fill:var(--surface); stroke:var(--line); stroke-width:1; }
+  .seam path { fill:none; stroke:var(--ground); stroke-width:1.2; opacity:.8; }
+  .m { stroke-width:1; stroke:color-mix(in srgb,var(--ground) 60%,var(--line)); }
   .legend { display:flex; gap:12px; justify-content:center; font-size:11.5px; color:var(--dim); margin-bottom:14px; flex-wrap:wrap; }
   .legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px; }
   .mrow { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:13.5px; }
@@ -286,6 +298,129 @@
 //  increment, and the muscles it loads (first is primary).
 // ═══════════════════════════════════════════════════════════════════════
 
+
+// ═══════════════════════════════════════════════════════════════════════
+//  EXERCISE LIBRARY — every movement, classified by muscle (first = primary)
+//  Programs reference these by key. Swaps pick from the same primary muscle.
+// ═══════════════════════════════════════════════════════════════════════
+const LIB = {
+  // chest
+  bench:      { n:"Barbell bench press",           mus:["chest","triceps","fdelt"], eq:"barbell",   demo:"Barbell_Bench_Press_-_Medium_Grip" },
+  dbbench:    { n:"Dumbbell bench press",          mus:["chest","triceps","fdelt"], eq:"dumbbell",  demo:"Dumbbell_Bench_Press" },
+  incdb:      { n:"Incline DB press",              mus:["chest","fdelt","triceps"], eq:"dumbbell",  demo:"Incline_Dumbbell_Press" },
+  incbb:      { n:"Incline barbell press",         mus:["chest","fdelt","triceps"], eq:"barbell",   demo:"Barbell_Incline_Bench_Press_-_Medium_Grip" },
+  chestpress: { n:"Chest press machine",           mus:["chest","triceps","fdelt"], eq:"machine",   demo:"Machine_Bench_Press" },
+  smithbench: { n:"Smith machine bench press",     mus:["chest","triceps","fdelt"], eq:"smith",     demo:"Smith_Machine_Bench_Press" },
+  incfly:     { n:"Incline DB fly",                mus:["chest"],                   eq:"dumbbell",  demo:"Incline_Dumbbell_Flyes" },
+  dbfly:      { n:"Flat DB fly",                   mus:["chest"],                   eq:"dumbbell",  demo:"Dumbbell_Flyes" },
+  cablefly:   { n:"Cable fly, high to low",        mus:["chest"],                   eq:"cable",     demo:"Cable_Crossover" },
+  lowcablefly:{ n:"Cable fly, low to high",        mus:["chest"],                   eq:"cable",     demo:"Low_Cable_Crossover" },
+  pecdeck:    { n:"Pec deck",                      mus:["chest"],                   eq:"machine",   demo:"Butterfly" },
+  dips:       { n:"Dips, chest lean",              mus:["chest","triceps"],         eq:"bodyweight",demo:"Dips_-_Chest_Version" },
+  pushup:     { n:"Push-up",                       mus:["chest","triceps","fdelt"], eq:"bodyweight",demo:"Pushups" },
+  // lats / upper back
+  latpull:    { n:"Lat pulldown, wide",            mus:["lats","biceps"],           eq:"cable",     demo:"Wide-Grip_Lat_Pulldown" },
+  underlat:   { n:"Lat pulldown, underhand",       mus:["lats","biceps"],           eq:"cable",     demo:"Underhand_Cable_Pulldowns" },
+  cgpull:     { n:"Lat pulldown, close grip",      mus:["lats","biceps"],           eq:"cable",     demo:"Close-Grip_Front_Lat_Pulldown" },
+  vbarpull:   { n:"V-bar pulldown",                mus:["lats","biceps"],           eq:"cable",     demo:"V-Bar_Pulldown" },
+  pullup:     { n:"Pull-up",                       mus:["lats","biceps"],           eq:"bodyweight",demo:"Pullups" },
+  chinup:     { n:"Chin-up",                       mus:["lats","biceps"],           eq:"bodyweight",demo:"Chin-Up" },
+  assistpull: { n:"Assisted pull-up",              mus:["lats","biceps"],           eq:"machine",   demo:"Band_Assisted_Pull-Up" },
+  cgrow:      { n:"Seated cable row",              mus:["lats","traps","biceps"],   eq:"cable",     demo:"Seated_Cable_Rows" },
+  bbrow:      { n:"Bent over barbell row",         mus:["lats","traps","lowback","biceps"], eq:"barbell", demo:"Bent_Over_Barbell_Row" },
+  dbrow:      { n:"One-arm dumbbell row",          mus:["lats","biceps"],           eq:"dumbbell",  demo:"One-Arm_Dumbbell_Row" },
+  tbar:       { n:"T-bar row",                     mus:["lats","traps","biceps"],   eq:"barbell",   demo:"T-Bar_Row_with_Handle" },
+  smithrow:   { n:"Smith machine row",             mus:["lats","traps","biceps"],   eq:"smith",     demo:"Smith_Machine_Bent_Over_Row" },
+  invrow:     { n:"Inverted row",                  mus:["lats","traps","biceps"],   eq:"bodyweight",demo:"Inverted_Row" },
+  pullover:   { n:"Cable rope pullover",           mus:["lats","chest"],            eq:"cable",     demo:"Rope_Straight-Arm_Pulldown" },
+  dbpullover: { n:"DB pullover",                   mus:["lats","chest"],            eq:"dumbbell",  demo:"Straight-Arm_Dumbbell_Pullover" },
+  rackpull:   { n:"Rack pull",                     mus:["lowback","traps","lats","glutes"], eq:"barbell", demo:"Rack_Pulls" },
+  deadlift:   { n:"Barbell deadlift",              mus:["lowback","glutes","hams","traps"], eq:"barbell", demo:"Barbell_Deadlift" },
+  // traps / rear delts
+  shrug:      { n:"Barbell shrug",                 mus:["traps"],                   eq:"barbell",   demo:"Barbell_Shrug" },
+  dbshrug:    { n:"Dumbbell shrug",                mus:["traps"],                   eq:"dumbbell",  demo:"Dumbbell_Shrug" },
+  cableshrug: { n:"Cable shrug",                   mus:["traps"],                   eq:"cable",     demo:"Cable_Shrugs" },
+  facepull:   { n:"Face pull",                     mus:["rdelt","traps"],           eq:"cable",     demo:"Face_Pull" },
+  reardelt:   { n:"Seated rear delt fly",          mus:["rdelt"],                   eq:"dumbbell",  demo:"Seated_Bent-Over_Rear_Delt_Raise" },
+  cablerear:  { n:"Cable rear delt fly",           mus:["rdelt"],                   eq:"cable",     demo:"Cable_Rear_Delt_Fly" },
+  revfly:     { n:"Reverse pec deck",              mus:["rdelt"],                   eq:"machine",   demo:"Reverse_Flyes" },
+  // delts
+  dbpress:    { n:"Seated DB shoulder press",      mus:["fdelt","sdelt","triceps"], eq:"dumbbell",  demo:"Dumbbell_Shoulder_Press" },
+  bbohp:      { n:"Barbell overhead press",        mus:["fdelt","sdelt","triceps"], eq:"barbell",   demo:"Barbell_Shoulder_Press" },
+  machpress:  { n:"Machine shoulder press",        mus:["fdelt","sdelt","triceps"], eq:"machine",   demo:"Leverage_Shoulder_Press" },
+  arnold:     { n:"Arnold press",                  mus:["fdelt","sdelt","triceps"], eq:"dumbbell",  demo:"Arnold_Dumbbell_Press" },
+  smithohp:   { n:"Smith machine shoulder press",  mus:["fdelt","sdelt","triceps"], eq:"smith",     demo:"Smith_Machine_Overhead_Shoulder_Press" },
+  lateral:    { n:"DB lateral raise",              mus:["sdelt"],                   eq:"dumbbell",  demo:"Side_Lateral_Raise" },
+  cablelat:   { n:"Cable lateral raise",           mus:["sdelt"],                   eq:"cable",     demo:"Cable_Seated_Lateral_Raise" },
+  seatedlat:  { n:"Seated DB lateral raise",       mus:["sdelt"],                   eq:"dumbbell",  demo:"Seated_Side_Lateral_Raise" },
+  frontraise: { n:"Front raise",                   mus:["fdelt"],                   eq:"dumbbell",  demo:"Front_Dumbbell_Raise" },
+  // triceps
+  pushdown:   { n:"Cable rope pushdown",           mus:["triceps"],                 eq:"cable",     demo:"Triceps_Pushdown_-_Rope_Attachment" },
+  vbarpush:   { n:"V-bar pushdown",                mus:["triceps"],                 eq:"cable",     demo:"Triceps_Pushdown_-_V-Bar_Attachment" },
+  ohtri:      { n:"Seated DB overhead tri ext",    mus:["triceps"],                 eq:"dumbbell",  demo:"Seated_Triceps_Press" },
+  cableoh:    { n:"Cable overhead tri extension",  mus:["triceps"],                 eq:"cable",     demo:"Cable_Rope_Overhead_Triceps_Extension" },
+  skull:      { n:"EZ-bar skullcrusher",           mus:["triceps"],                 eq:"barbell",   demo:"EZ-Bar_Skullcrusher" },
+  cgbench:    { n:"Close-grip bench press",        mus:["triceps","chest"],         eq:"barbell",   demo:"Close-Grip_Barbell_Bench_Press" },
+  tridip:     { n:"Dips, upright",                 mus:["triceps","chest"],         eq:"bodyweight",demo:"Dips_-_Triceps_Version" },
+  benchdip:   { n:"Bench dip",                     mus:["triceps"],                 eq:"bodyweight",demo:"Bench_Dips" },
+  dipmach:    { n:"Dip machine",                   mus:["triceps","chest"],         eq:"machine",   demo:"Dip_Machine" },
+  trikick:    { n:"DB triceps kickback",           mus:["triceps"],                 eq:"dumbbell",  demo:"Tricep_Dumbbell_Kickback" },
+  // biceps
+  cablecurl:  { n:"Straight bar cable curl",       mus:["biceps"],                  eq:"cable",     demo:"Standing_Biceps_Cable_Curl" },
+  ezcurl:     { n:"EZ-bar curl",                   mus:["biceps"],                  eq:"barbell",   demo:"EZ-Bar_Curl" },
+  bbcurl:     { n:"Barbell curl",                  mus:["biceps"],                  eq:"barbell",   demo:"Barbell_Curl" },
+  dbcurl:     { n:"DB curl",                       mus:["biceps"],                  eq:"dumbbell",  demo:"Dumbbell_Bicep_Curl" },
+  hammer:     { n:"DB hammer curl",                mus:["biceps","forearms"],       eq:"dumbbell",  demo:"Alternate_Hammer_Curl" },
+  preacher:   { n:"Preacher curl",                 mus:["biceps"],                  eq:"barbell",   demo:"Preacher_Curl" },
+  machcurl:   { n:"Machine curl",                  mus:["biceps"],                  eq:"machine",   demo:"Machine_Bicep_Curl" },
+  conccurl:   { n:"Concentration curl",            mus:["biceps"],                  eq:"dumbbell",  demo:"Concentration_Curls" },
+  inccurl:    { n:"Incline DB curl",               mus:["biceps"],                  eq:"dumbbell",  demo:"Alternate_Incline_Dumbbell_Curl" },
+  // quads
+  legpress:   { n:"Leg press",                     mus:["quads","glutes"],          eq:"machine",   demo:"Leg_Press" },
+  legpressH:  { n:"Leg press, feet high",          mus:["glutes","hams","quads"],   eq:"machine",   demo:"Leg_Press" },
+  legext:     { n:"Leg extension",                 mus:["quads"],                   eq:"machine",   demo:"Leg_Extensions" },
+  goblet:     { n:"Goblet squat",                  mus:["quads","glutes"],          eq:"dumbbell",  demo:"Goblet_Squat" },
+  hack:       { n:"Hack squat",                    mus:["quads","glutes"],          eq:"machine",   demo:"Hack_Squat" },
+  bbsquat:    { n:"Barbell back squat",            mus:["quads","glutes","lowback"],eq:"barbell",   demo:"Barbell_Full_Squat" },
+  frontsquat: { n:"Front squat",                   mus:["quads","glutes"],          eq:"barbell",   demo:"Front_Squat_Clean_Grip" },
+  split:      { n:"DB Bulgarian split squat",      mus:["quads","glutes"],          eq:"dumbbell",  demo:"Split_Squat_with_Dumbbells" },
+  lunge:      { n:"DB walking lunge",              mus:["glutes","quads"],          eq:"dumbbell",  demo:"Dumbbell_Lunges" },
+  bwlunge:    { n:"Bodyweight walking lunge",      mus:["glutes","quads"],          eq:"bodyweight",demo:"Bodyweight_Walking_Lunge" },
+  stepup:     { n:"DB step-up",                    mus:["glutes","quads"],          eq:"dumbbell",  demo:"Dumbbell_Step_Ups" },
+  // hamstrings
+  hamcurl:    { n:"Seated hamstring curl",         mus:["hams"],                    eq:"machine",   demo:"Seated_Leg_Curl" },
+  lyingcurl:  { n:"Lying hamstring curl",          mus:["hams"],                    eq:"machine",   demo:"Lying_Leg_Curls" },
+  rdl:        { n:"Romanian deadlift",             mus:["hams","glutes","lowback"], eq:"barbell",   demo:"Romanian_Deadlift" },
+  dbrdl:      { n:"Dumbbell Romanian deadlift",    mus:["hams","glutes","lowback"], eq:"dumbbell",  demo:"Stiff-Legged_Dumbbell_Deadlift" },
+  goodmorning:{ n:"Good morning",                  mus:["hams","lowback","glutes"], eq:"barbell",   demo:"Good_Morning" },
+  // glutes
+  hipthrust:  { n:"Hip thrust machine",            mus:["glutes","hams"],           eq:"machine",   demo:"Barbell_Hip_Thrust" },
+  bbhipthrust:{ n:"Barbell hip thrust",            mus:["glutes","hams"],           eq:"barbell",   demo:"Barbell_Hip_Thrust" },
+  glutebridge:{ n:"Glute bridge",                  mus:["glutes","hams"],           eq:"bodyweight",demo:"Barbell_Glute_Bridge" },
+  kickback:   { n:"Cable glute kickback",          mus:["glutes"],                  eq:"cable",     demo:"One-Legged_Cable_Kickback" },
+  abduct:     { n:"Hip abduction machine",         mus:["glutes"],                  eq:"machine",   demo:"Thigh_Abductor" },
+  adduct:     { n:"Hip adduction machine",         mus:["adductors"],               eq:"machine",   demo:"Thigh_Adductor" },
+  backext:    { n:"Back extension",                mus:["glutes","hams","lowback"], eq:"bodyweight",demo:"Hyperextensions_Back_Extensions" },
+  pullthrough:{ n:"Cable pull-through",            mus:["glutes","hams"],           eq:"cable",     demo:"Pull_Through" },
+  sumo:       { n:"Sumo deadlift",                 mus:["glutes","quads","hams","lowback"], eq:"barbell", demo:"Sumo_Deadlift" },
+  // calves
+  calf:       { n:"Seated calf raise",             mus:["calves"],                  eq:"machine",   demo:"Seated_Calf_Raise" },
+  standcalf:  { n:"Standing calf raise",           mus:["calves"],                  eq:"machine",   demo:"Standing_Calf_Raises" },
+  calfpress:  { n:"Calf press on leg press",       mus:["calves"],                  eq:"machine",   demo:"Calf_Press_On_The_Leg_Press_Machine" },
+  donkey:     { n:"Donkey calf raise",             mus:["calves"],                  eq:"machine",   demo:"Donkey_Calf_Raises" },
+};
+const EQ = { barbell:"Barbell", dumbbell:"Dumbbells", cable:"Cable", machine:"Machine", smith:"Smith", bodyweight:"Bodyweight" };
+
+// old per-slot ids → library keys (for logs saved before the library existed)
+const MIGRATE = { incdbB:"incdb", hamcurlB:"hamcurl", legextB:"legext", hipthrustB:"hipthrust", calfB:"calf", lateralB:"lateral", hammerB:"hammer", pushdownB:"pushdown", reardeltB:"reardelt",
+  s_hipthrust:"hipthrust", s_legpress:"legpressH", s_rdl:"dbrdl", s_abduct:"abduct", s_lunge:"lunge", s_latpull:"latpull", s_dbpress:"dbpress", s_cablerow:"cgrow", s_lateral:"lateral", s_facepull:"facepull", s_pushdown:"pushdown",
+  s_goblet:"goblet", s_hamcurl:"hamcurl", s_split:"split", s_legext:"legext", s_kickback:"kickback", s_calf:"calf", s_chestpress:"chestpress", s_dbrow:"dbrow", s_lateralB:"lateral", s_underlat:"underlat", s_hammer:"hammer",
+  s_hipthrustB:"hipthrust", s_stepup:"stepup", s_abductB:"abduct", s_backext:"backext",
+  f_goblet:"goblet", f_chest:"chestpress", f_latpull:"latpull", f_rdl:"dbrdl", f_dbpress:"dbpress", f_legpress:"legpress", f_cablerow:"cgrow", f_incdb:"incdb", f_hamcurl:"hamcurl", f_lateral:"lateral", f_pushdown:"pushdown",
+  f_split:"split", f_underlat:"underlat", f_dbbench:"dbbench", f_hipthrust:"hipthrust", f_facepull:"facepull", f_hammer:"hammer",
+  u_bench:"bench", u_cablerow:"cgrow", u_dbpress:"dbpress", u_latpull:"latpull", u_pushdown:"pushdown", u_curl:"cablecurl", l_legpress:"legpress", l_rdl:"rdl", l_legext:"legext", l_hamcurl:"hamcurl", l_calf:"calf",
+  u_incdb:"incdb", u_bbrow:"bbrow", u_lateral:"lateral", u_underlat:"underlat", u_ohtri:"cableoh", u_hammer:"hammer", l_hipthrust:"hipthrust", l_split:"split", l_hamcurlB:"hamcurl", l_legextB:"legext", l_backext:"backext", l_calfB:"calf" };
+
 const PROGRAMS = {
   arnold: {
     name: "Arnold split",
@@ -305,56 +440,56 @@ const PROGRAMS = {
     },
     days: {
       chestBackA: { name:"Chest + Back", ex:[
-        { id:"bench", n:"Barbell flat bench",          sets:4, w:null, r:8,  lo:8,  hi:10, inc:5,   mus:["chest","triceps","fdelt"], demo:"Barbell_Bench_Press_-_Medium_Grip" },
-        { id:"cgrow", n:"Seated close-grip cable row", sets:4, w:null, r:12, lo:12, hi:15, inc:10,  mus:["lats","traps","biceps"], demo:"Seated_Cable_Rows" },
-        { id:"incdb", n:"Incline pronated DB press",   sets:3, w:null, r:6,  lo:6,  hi:8,  inc:5,   mus:["chest","fdelt","triceps"], demo:"Incline_Dumbbell_Press" },
-        { id:"latpull", n:"Overhand lat pulldown",       sets:3, w:null, r:10, lo:10, hi:12, inc:10,  mus:["lats","biceps"], demo:"Wide-Grip_Lat_Pulldown" },
-        { id:"incfly", n:"Incline DB chest fly",        sets:3, w:null, r:10, lo:10, hi:15, inc:5,   mus:["chest"], demo:"Incline_Dumbbell_Flyes", drop:true },
-        { id:"facepull", n:"Face pull",                   sets:3, w:null, r:15, lo:15, hi:20, inc:5,   mus:["rdelt","traps"], demo:"Face_Pull" },
+        { id:"bench", lib:"bench",          sets:4, w:null, r:8,  lo:8,  hi:10, inc:5 },
+        { id:"cgrow", lib:"cgrow", sets:4, w:null, r:12, lo:12, hi:15, inc:10 },
+        { id:"incdb", lib:"incdb",   sets:3, w:null, r:6,  lo:6,  hi:8,  inc:5 },
+        { id:"latpull", lib:"latpull",       sets:3, w:null, r:10, lo:10, hi:12, inc:10 },
+        { id:"incfly", lib:"incfly",        sets:3, w:null, r:10, lo:10, hi:15, inc:5, drop:true },
+        { id:"facepull", lib:"facepull",                   sets:3, w:null, r:15, lo:15, hi:20, inc:5 },
       ]},
       shouldersArmsA: { name:"Shoulders + Arms", core:"Dead bug 3×8/side · Pallof press 3×10/side", ex:[
-        { id:"dbpress", n:"Seated DB shoulder press",    sets:4, w:null, r:8,  lo:8,  hi:10, inc:5,   mus:["fdelt","sdelt","triceps"], demo:"Dumbbell_Shoulder_Press" },
-        { id:"lateral", n:"Standing DB lateral raise",   sets:4, w:null, r:10, lo:10, hi:15, inc:2.5, mus:["sdelt"], demo:"Side_Lateral_Raise" },
-        { id:"ohtri", n:"Seated DB overhead tri ext",  sets:3, w:null, r:8,  lo:8,  hi:10, inc:5,   mus:["triceps"], demo:"Seated_Triceps_Press" },
-        { id:"cablecurl", n:"Straight bar cable curl",     sets:3, w:null, r:12, lo:12, hi:15, inc:5,   mus:["biceps"], demo:"Standing_Biceps_Cable_Curl",
+        { id:"dbpress", lib:"dbpress",    sets:4, w:null, r:8,  lo:8,  hi:10, inc:5 },
+        { id:"lateral", lib:"lateral",   sets:4, w:null, r:10, lo:10, hi:15, inc:2.5 },
+        { id:"ohtri", lib:"ohtri",  sets:3, w:null, r:8,  lo:8,  hi:10, inc:5 },
+        { id:"cablecurl", lib:"cablecurl",     sets:3, w:null, r:12, lo:12, hi:15, inc:5,
           note:"Sept 4 log shows set 3 at 47.5×10 after 32.5×12. Confirm the pulley before trusting this baseline." },
-        { id:"pushdown", n:"Cable rope pushdown",         sets:3, w:null, r:12, lo:12, hi:15, inc:5,   mus:["triceps"], demo:"Triceps_Pushdown_-_Rope_Attachment" },
-        { id:"hammer", n:"Alternating DB hammer curl",  sets:3, w:null, r:12, lo:10, hi:12, inc:5,   mus:["biceps","forearms"], demo:"Alternate_Hammer_Curl",
+        { id:"pushdown", lib:"pushdown",         sets:3, w:null, r:12, lo:12, hi:15, inc:5 },
+        { id:"hammer", lib:"hammer",  sets:3, w:null, r:12, lo:10, hi:12, inc:5,
           note:"Hold 30 across all three sets. Dropping to 20 by set 3 is session fatigue, not the plan." },
-        { id:"reardelt", n:"Seated rear delt fly",        sets:3, w:null, r:10, lo:10, hi:15, inc:5,   mus:["rdelt"], demo:"Seated_Bent-Over_Rear_Delt_Raise", drop:true },
+        { id:"reardelt", lib:"reardelt",        sets:3, w:null, r:10, lo:10, hi:15, inc:5, drop:true },
       ]},
       legs: { name:"Legs", core:"Captain's chair leg raise 3×10 — posterior pelvic tilt at the top", ex:[
-        { id:"legpress", n:"Leg press",                   sets:4, w:null, r:10, lo:8,  hi:12, inc:10,  mus:["quads","glutes"], demo:"Leg_Press" },
-        { id:"hamcurl",  n:"Seated hamstring curl",       sets:4, w:null, r:10, lo:10, hi:12, inc:10,  mus:["hams"], demo:"Seated_Leg_Curl" },
-        { id:"legext",   n:"Leg extension",               sets:3, w:null, r:12, lo:12, hi:15, inc:10,  mus:["quads"], demo:"Leg_Extensions" },
-        { id:"hipthrust",n:"Hip thrust machine",          sets:3, w:null, r:10, lo:10, hi:12, inc:10,  mus:["glutes","hams"], demo:"Barbell_Hip_Thrust",
+        { id:"legpress", lib:"legpress",                   sets:4, w:null, r:10, lo:8,  hi:12, inc:10 },
+        { id:"hamcurl", lib:"hamcurl",       sets:4, w:null, r:10, lo:10, hi:12, inc:10 },
+        { id:"legext", lib:"legext",               sets:3, w:null, r:12, lo:12, hi:15, inc:10 },
+        { id:"hipthrust", lib:"hipthrust",          sets:3, w:null, r:10, lo:10, hi:12, inc:10,
           note:"Hold until Samantha sets you up. Posterior pelvic control first, load second. Seated lumbar extension until then." },
-        { id:"abduct",   n:"Adductor / abductor",         sets:3, w:null, r:12, lo:12, hi:15, inc:10,  mus:["glutes","quads"], demo:"Thigh_Adductor" },
-        { id:"calf",     n:"Calf raise",                  sets:4, w:null, r:12, lo:12, hi:15, inc:10,  mus:["calves"], demo:"Seated_Calf_Raise" },
+        { id:"abduct", lib:"abduct",         sets:3, w:null, r:12, lo:12, hi:15, inc:10 },
+        { id:"calf", lib:"calf",                  sets:4, w:null, r:12, lo:12, hi:15, inc:10 },
       ]},
       recovery: { name:"Active recovery", rest:true, core:"45 min walk · Dead bug 3×8/side · Pallof press 3×10/side · hip flexor and thoracic mobility", ex:[] },
       chestBackB: { name:"Chest + Back", ex:[
-        { id:"incdbB", n:"Incline pronated DB press",   sets:4, w:null, r:10, lo:10, hi:12, inc:5,   mus:["chest","fdelt","triceps"], demo:"Incline_Dumbbell_Press" },
-        { id:"bbrow", n:"Bent over barbell row",       sets:4, w:null, r:10, lo:10, hi:12, inc:5,   mus:["lats","traps","lowback","biceps"], demo:"Bent_Over_Barbell_Row" },
-        { id:"cablefly", n:"Cable fly, high to low",      sets:3, w:null, r:10, lo:10, hi:15, inc:2.5, mus:["chest"], demo:"Cable_Crossover" },
-        { id:"pullover", n:"Cable rope pullover",         sets:3, w:null, r:12, lo:12, hi:15, inc:5,   mus:["lats","chest"], demo:"Rope_Straight-Arm_Pulldown",
+        { id:"incdbB", lib:"incdb",   sets:4, w:null, r:10, lo:10, hi:12, inc:5 },
+        { id:"bbrow", lib:"bbrow",       sets:4, w:null, r:10, lo:10, hi:12, inc:5 },
+        { id:"cablefly", lib:"cablefly",      sets:3, w:null, r:10, lo:10, hi:15, inc:2.5 },
+        { id:"pullover", lib:"pullover",         sets:3, w:null, r:12, lo:12, hi:15, inc:5,
           note:"Hold 42.5 across all three sets." },
-        { id:"underlat", n:"Underhand lat pulldown",      sets:3, w:null, r:12, lo:12, hi:15, inc:10,  mus:["lats","biceps"], demo:"Underhand_Cable_Pulldowns", drop:true },
-        { id:"shrug", n:"Barbell shrug",               sets:3, w:null, r:10, lo:10, hi:15, inc:10,  mus:["traps"], demo:"Barbell_Shrug" },
+        { id:"underlat", lib:"underlat",      sets:3, w:null, r:12, lo:12, hi:15, inc:10, drop:true },
+        { id:"shrug", lib:"shrug",               sets:3, w:null, r:10, lo:10, hi:15, inc:10 },
       ]},
       legsB: { name:"Legs", core:"Seated crunch 3×12 · Pallof press 3×10/side", ex:[
-        { id:"hamcurlB", n:"Seated hamstring curl",       sets:4, w:null, r:10, lo:10, hi:12, inc:10,  mus:["hams"], demo:"Seated_Leg_Curl" },
-        { id:"legpressH",n:"Leg press, feet high",        sets:3, w:null, r:12, lo:12, hi:15, inc:10,  mus:["glutes","hams","quads"], demo:"Leg_Press" },
-        { id:"legextB",  n:"Leg extension",               sets:3, w:null, r:15, lo:15, hi:20, inc:10,  mus:["quads"], demo:"Leg_Extensions" },
-        { id:"hipthrustB",n:"Hip thrust machine",         sets:3, w:null, r:12, lo:12, hi:15, inc:10,  mus:["glutes","hams"], demo:"Barbell_Hip_Thrust" },
-        { id:"calfB",    n:"Calf raise",                  sets:4, w:null, r:15, lo:15, hi:20, inc:10,  mus:["calves"], demo:"Seated_Calf_Raise" },
+        { id:"hamcurlB", lib:"hamcurl",       sets:4, w:null, r:10, lo:10, hi:12, inc:10 },
+        { id:"legpressH", lib:"legpressH",        sets:3, w:null, r:12, lo:12, hi:15, inc:10 },
+        { id:"legextB", lib:"legext",               sets:3, w:null, r:15, lo:15, hi:20, inc:10 },
+        { id:"hipthrustB", lib:"hipthrust",         sets:3, w:null, r:12, lo:12, hi:15, inc:10 },
+        { id:"calfB", lib:"calf",                  sets:4, w:null, r:15, lo:15, hi:20, inc:10 },
       ]},
       shouldersArmsB: { name:"Shoulders + Arms", core:"Seated crunch 3×12 · Pallof press 3×10/side", ex:[
-        { id:"lateralB", n:"Standing DB lateral raise",   sets:4, w:null, r:15, lo:15, hi:20, inc:2.5, mus:["sdelt"], demo:"Side_Lateral_Raise" },
-        { id:"machpress",n:"Machine shoulder press",      sets:3, w:null, r:10, lo:10, hi:12, inc:10,  mus:["fdelt","sdelt","triceps"], demo:"Leverage_Shoulder_Press" },
-        { id:"hammerB", n:"Alternating DB hammer curl",  sets:3, w:null, r:10, lo:10, hi:12, inc:5,   mus:["biceps","forearms"], demo:"Alternate_Hammer_Curl" },
-        { id:"pushdownB",n:"Cable rope pushdown",         sets:3, w:null, r:12, lo:12, hi:15, inc:5,   mus:["triceps"], demo:"Triceps_Pushdown_-_Rope_Attachment" },
-        { id:"reardeltB", n:"Seated rear delt fly",        sets:3, w:null, r:15, lo:15, hi:20, inc:5,   mus:["rdelt"], demo:"Seated_Bent-Over_Rear_Delt_Raise" },
+        { id:"lateralB", lib:"lateral",   sets:4, w:null, r:15, lo:15, hi:20, inc:2.5 },
+        { id:"machpress", lib:"machpress",      sets:3, w:null, r:10, lo:10, hi:12, inc:10 },
+        { id:"hammerB", lib:"hammer",  sets:3, w:null, r:10, lo:10, hi:12, inc:5 },
+        { id:"pushdownB", lib:"pushdown",         sets:3, w:null, r:12, lo:12, hi:15, inc:5 },
+        { id:"reardeltB", lib:"reardelt",        sets:3, w:null, r:15, lo:15, hi:20, inc:5 },
       ]},
       off: { name:"Rest day", rest:true, ex:[] },
     }
@@ -377,41 +512,41 @@ const PROGRAMS = {
     },
     days: {
       lowerA: { name:"Lower — Glutes", core:"Dead bug 3×8/side · Side plank 3×20 s/side", ex:[
-        { id:"s_hipthrust", n:"Hip thrust machine",        sets:4, w:null, r:10, lo:10, hi:15, inc:10,  mus:["glutes","hams"], demo:"Barbell_Hip_Thrust" },
-        { id:"s_legpress",  n:"Leg press, feet high",      sets:3, w:null, r:10, lo:10, hi:15, inc:10,  mus:["glutes","hams","quads"], demo:"Leg_Press" },
-        { id:"s_rdl",       n:"Dumbbell Romanian deadlift",sets:3, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["hams","glutes","lowback"], demo:"Romanian_Deadlift" },
-        { id:"s_abduct",    n:"Hip abduction machine",     sets:3, w:null, r:15, lo:12, hi:20, inc:10,  mus:["glutes"], demo:"Thigh_Abductor" },
-        { id:"s_lunge",     n:"Dumbbell walking lunge",    sets:3, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["glutes","quads"], demo:"Dumbbell_Lunges" },
+        { id:"s_hipthrust", lib:"hipthrust",        sets:4, w:null, r:10, lo:10, hi:15, inc:10 },
+        { id:"s_legpress", lib:"legpressH",      sets:3, w:null, r:10, lo:10, hi:15, inc:10 },
+        { id:"s_rdl", lib:"dbrdl",sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"s_abduct", lib:"abduct",     sets:3, w:null, r:15, lo:12, hi:20, inc:10 },
+        { id:"s_lunge", lib:"lunge",    sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
       ]},
       upperA: { name:"Upper — Shoulders + Back", core:"Pallof press 3×10/side · Reverse crunch 3×12", ex:[
-        { id:"s_latpull",   n:"Lat pulldown",              sets:3, w:null, r:10, lo:10, hi:12, inc:10,  mus:["lats","biceps"], demo:"Wide-Grip_Lat_Pulldown" },
-        { id:"s_dbpress",   n:"Seated DB shoulder press",  sets:3, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["fdelt","sdelt","triceps"], demo:"Dumbbell_Shoulder_Press" },
-        { id:"s_cablerow",  n:"Seated cable row",          sets:3, w:null, r:12, lo:10, hi:15, inc:10,  mus:["lats","traps","biceps"], demo:"Seated_Cable_Rows" },
-        { id:"s_lateral",   n:"DB lateral raise",          sets:3, w:null, r:12, lo:12, hi:15, inc:2.5, mus:["sdelt"], demo:"Side_Lateral_Raise" },
-        { id:"s_facepull",  n:"Face pull",                 sets:3, w:null, r:15, lo:12, hi:20, inc:5,   mus:["rdelt","traps"], demo:"Face_Pull" },
-        { id:"s_pushdown",  n:"Cable rope pushdown",       sets:2, w:null, r:12, lo:12, hi:15, inc:5,   mus:["triceps"], demo:"Triceps_Pushdown_-_Rope_Attachment" },
+        { id:"s_latpull", lib:"latpull",              sets:3, w:null, r:10, lo:10, hi:12, inc:10 },
+        { id:"s_dbpress", lib:"dbpress",  sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"s_cablerow", lib:"cgrow",          sets:3, w:null, r:12, lo:10, hi:15, inc:10 },
+        { id:"s_lateral", lib:"lateral",          sets:3, w:null, r:12, lo:12, hi:15, inc:2.5 },
+        { id:"s_facepull", lib:"facepull",                 sets:3, w:null, r:15, lo:12, hi:20, inc:5 },
+        { id:"s_pushdown", lib:"pushdown",       sets:2, w:null, r:12, lo:12, hi:15, inc:5 },
       ]},
       recovery: { name:"Active recovery", rest:true, core:"30–45 min walk · Dead bug 3×8/side · hip flexor and glute stretches", ex:[] },
       lowerB: { name:"Lower — Quads + Hams", core:"Captain's chair leg raise 3×10 · Plank 3×30 s", ex:[
-        { id:"s_goblet",    n:"Goblet squat",              sets:4, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["quads","glutes"], demo:"Goblet_Squat" },
-        { id:"s_hamcurl",   n:"Seated hamstring curl",     sets:3, w:null, r:12, lo:10, hi:15, inc:10,  mus:["hams"], demo:"Seated_Leg_Curl" },
-        { id:"s_split",     n:"DB Bulgarian split squat",  sets:3, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["quads","glutes"], demo:"Split_Squat_with_Dumbbells" },
-        { id:"s_legext",    n:"Leg extension",             sets:3, w:null, r:12, lo:12, hi:15, inc:10,  mus:["quads"], demo:"Leg_Extensions" },
-        { id:"s_kickback",  n:"Cable glute kickback",      sets:3, w:null, r:12, lo:12, hi:15, inc:5,   mus:["glutes"], demo:"One-Legged_Cable_Kickback" },
-        { id:"s_calf",      n:"Calf raise",                sets:3, w:null, r:15, lo:12, hi:20, inc:10,  mus:["calves"], demo:"Seated_Calf_Raise" },
+        { id:"s_goblet", lib:"goblet",              sets:4, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"s_hamcurl", lib:"hamcurl",     sets:3, w:null, r:12, lo:10, hi:15, inc:10 },
+        { id:"s_split", lib:"split",  sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"s_legext", lib:"legext",             sets:3, w:null, r:12, lo:12, hi:15, inc:10 },
+        { id:"s_kickback", lib:"kickback",      sets:3, w:null, r:12, lo:12, hi:15, inc:5 },
+        { id:"s_calf", lib:"calf",                sets:3, w:null, r:15, lo:12, hi:20, inc:10 },
       ]},
       upperB: { name:"Upper — Full + Core", core:"Cable crunch 3×12 · Side plank 3×20 s/side · Pallof 3×10/side", ex:[
-        { id:"s_chestpress",n:"Chest press machine",       sets:3, w:null, r:10, lo:10, hi:12, inc:10,  mus:["chest","triceps","fdelt"], demo:"Machine_Bench_Press" },
-        { id:"s_dbrow",     n:"One-arm dumbbell row",      sets:3, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["lats","biceps"], demo:"One-Arm_Dumbbell_Row" },
-        { id:"s_lateralB",  n:"DB lateral raise",          sets:3, w:null, r:15, lo:12, hi:15, inc:2.5, mus:["sdelt"], demo:"Side_Lateral_Raise" },
-        { id:"s_underlat",  n:"Underhand lat pulldown",    sets:3, w:null, r:12, lo:10, hi:15, inc:10,  mus:["lats","biceps"], demo:"Underhand_Cable_Pulldowns" },
-        { id:"s_hammer",    n:"DB hammer curl",            sets:2, w:null, r:12, lo:10, hi:15, inc:5,   mus:["biceps","forearms"], demo:"Alternate_Hammer_Curl" },
+        { id:"s_chestpress", lib:"chestpress",       sets:3, w:null, r:10, lo:10, hi:12, inc:10 },
+        { id:"s_dbrow", lib:"dbrow",      sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"s_lateralB", lib:"lateral",          sets:3, w:null, r:15, lo:12, hi:15, inc:2.5 },
+        { id:"s_underlat", lib:"underlat",    sets:3, w:null, r:12, lo:10, hi:15, inc:10 },
+        { id:"s_hammer", lib:"hammer",            sets:2, w:null, r:12, lo:10, hi:15, inc:5 },
       ]},
       glutes: { name:"Glutes + Conditioning", optional:true, core:"Reverse crunch 3×12 · Dead bug 3×8/side", ex:[
-        { id:"s_hipthrustB",n:"Hip thrust machine",        sets:3, w:null, r:12, lo:12, hi:15, inc:10,  mus:["glutes","hams"], demo:"Barbell_Hip_Thrust" },
-        { id:"s_stepup",    n:"Dumbbell step-up",          sets:3, w:null, r:10, lo:8,  hi:12, inc:5,   mus:["glutes","quads"], demo:"Dumbbell_Step_Ups" },
-        { id:"s_abductB",   n:"Hip abduction machine",     sets:3, w:null, r:15, lo:15, hi:20, inc:10,  mus:["glutes"], demo:"Thigh_Abductor" },
-        { id:"s_backext",   n:"Back extension, glute focus",sets:3, w:null, r:12, lo:12, hi:15, inc:5,   mus:["glutes","hams","lowback"], demo:"Hyperextensions_Back_Extensions" },
+        { id:"s_hipthrustB", lib:"hipthrust",        sets:3, w:null, r:12, lo:12, hi:15, inc:10 },
+        { id:"s_stepup", lib:"stepup",          sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"s_abductB", lib:"abduct",     sets:3, w:null, r:15, lo:15, hi:20, inc:10 },
+        { id:"s_backext", lib:"backext",sets:3, w:null, r:12, lo:12, hi:15, inc:5 },
       ]},
       off: { name:"Rest day", rest:true, ex:[] },
     }
@@ -425,27 +560,27 @@ const PROGRAMS = {
     schedule: d => { const wd=d.getDay(); return wd===1?"dayA": wd===3?"dayB": wd===5?"dayC": (wd===0||wd===6)?"off":"recovery"; },
     days: {
       dayA: { name:"Full body A", core:"Plank 3×30 s · Dead bug 3×8/side", ex:[
-        { id:"f_goblet",   n:"Goblet squat",             sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["quads","glutes"], demo:"Goblet_Squat" },
-        { id:"f_chest",    n:"Chest press machine",      sets:3, w:null, r:10, lo:8,  hi:12, inc:10, mus:["chest","triceps","fdelt"], demo:"Machine_Bench_Press" },
-        { id:"f_latpull",  n:"Lat pulldown",             sets:3, w:null, r:10, lo:10, hi:12, inc:10, mus:["lats","biceps"], demo:"Wide-Grip_Lat_Pulldown" },
-        { id:"f_rdl",      n:"Dumbbell Romanian deadlift",sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["hams","glutes","lowback"], demo:"Romanian_Deadlift" },
-        { id:"f_dbpress",  n:"Seated DB shoulder press", sets:2, w:null, r:10, lo:10, hi:12, inc:5,  mus:["fdelt","sdelt","triceps"], demo:"Dumbbell_Shoulder_Press" },
+        { id:"f_goblet", lib:"goblet",             sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"f_chest", lib:"chestpress",      sets:3, w:null, r:10, lo:8,  hi:12, inc:10 },
+        { id:"f_latpull", lib:"latpull",             sets:3, w:null, r:10, lo:10, hi:12, inc:10 },
+        { id:"f_rdl", lib:"dbrdl",sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"f_dbpress", lib:"dbpress", sets:2, w:null, r:10, lo:10, hi:12, inc:5 },
       ]},
       dayB: { name:"Full body B", core:"Side plank 3×20 s/side · Reverse crunch 3×12", ex:[
-        { id:"f_legpress", n:"Leg press",                sets:3, w:null, r:10, lo:10, hi:12, inc:10, mus:["quads","glutes"], demo:"Leg_Press" },
-        { id:"f_cablerow", n:"Seated cable row",         sets:3, w:null, r:10, lo:10, hi:12, inc:10, mus:["lats","traps","biceps"], demo:"Seated_Cable_Rows" },
-        { id:"f_incdb",    n:"Incline DB press",         sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["chest","fdelt","triceps"], demo:"Incline_Dumbbell_Press" },
-        { id:"f_hamcurl",  n:"Seated hamstring curl",    sets:3, w:null, r:12, lo:10, hi:12, inc:10, mus:["hams"], demo:"Seated_Leg_Curl" },
-        { id:"f_lateral",  n:"DB lateral raise",         sets:2, w:null, r:12, lo:12, hi:15, inc:2.5,mus:["sdelt"], demo:"Side_Lateral_Raise" },
-        { id:"f_pushdown", n:"Cable rope pushdown",      sets:2, w:null, r:12, lo:12, hi:15, inc:5,  mus:["triceps"], demo:"Triceps_Pushdown_-_Rope_Attachment" },
+        { id:"f_legpress", lib:"legpress",                sets:3, w:null, r:10, lo:10, hi:12, inc:10 },
+        { id:"f_cablerow", lib:"cgrow",         sets:3, w:null, r:10, lo:10, hi:12, inc:10 },
+        { id:"f_incdb", lib:"incdb",         sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"f_hamcurl", lib:"hamcurl",    sets:3, w:null, r:12, lo:10, hi:12, inc:10 },
+        { id:"f_lateral", lib:"lateral",         sets:2, w:null, r:12, lo:12, hi:15, inc:2.5 },
+        { id:"f_pushdown", lib:"pushdown",      sets:2, w:null, r:12, lo:12, hi:15, inc:5 },
       ]},
       dayC: { name:"Full body C", core:"Pallof press 3×10/side · Dead bug 3×8/side", ex:[
-        { id:"f_split",    n:"DB split squat",           sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["quads","glutes"], demo:"Split_Squat_with_Dumbbells" },
-        { id:"f_underlat", n:"Underhand lat pulldown",   sets:3, w:null, r:10, lo:10, hi:12, inc:10, mus:["lats","biceps"], demo:"Underhand_Cable_Pulldowns" },
-        { id:"f_dbbench",  n:"Dumbbell bench press",     sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["chest","triceps","fdelt"], demo:"Dumbbell_Bench_Press" },
-        { id:"f_hipthrust",n:"Hip thrust machine",       sets:3, w:null, r:10, lo:10, hi:12, inc:10, mus:["glutes","hams"], demo:"Barbell_Hip_Thrust" },
-        { id:"f_facepull", n:"Face pull",                sets:2, w:null, r:15, lo:12, hi:20, inc:5,  mus:["rdelt","traps"], demo:"Face_Pull" },
-        { id:"f_hammer",   n:"DB hammer curl",           sets:2, w:null, r:12, lo:10, hi:12, inc:5,  mus:["biceps","forearms"], demo:"Alternate_Hammer_Curl" },
+        { id:"f_split", lib:"split",           sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"f_underlat", lib:"underlat",   sets:3, w:null, r:10, lo:10, hi:12, inc:10 },
+        { id:"f_dbbench", lib:"dbbench",     sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"f_hipthrust", lib:"hipthrust",       sets:3, w:null, r:10, lo:10, hi:12, inc:10 },
+        { id:"f_facepull", lib:"facepull",                sets:2, w:null, r:15, lo:12, hi:20, inc:5 },
+        { id:"f_hammer", lib:"hammer",           sets:2, w:null, r:12, lo:10, hi:12, inc:5 },
       ]},
       recovery: { name:"Active recovery", rest:true, core:"30 min walk · easy mobility", ex:[] },
       off: { name:"Rest day", rest:true, ex:[] },
@@ -460,35 +595,35 @@ const PROGRAMS = {
     schedule: d => { const wd=d.getDay(); return wd===1?"upperA": wd===2?"lowerA": wd===4?"upperB": wd===5?"lowerB": wd===3?"recovery":"off"; },
     days: {
       upperA: { name:"Upper A", core:"Pallof press 3×10/side", ex:[
-        { id:"u_bench",    n:"Barbell bench press",      sets:4, w:null, r:8,  lo:6,  hi:10, inc:5,  mus:["chest","triceps","fdelt"], demo:"Barbell_Bench_Press_-_Medium_Grip" },
-        { id:"u_cablerow", n:"Seated cable row",         sets:4, w:null, r:10, lo:8,  hi:12, inc:10, mus:["lats","traps","biceps"], demo:"Seated_Cable_Rows" },
-        { id:"u_dbpress",  n:"Seated DB shoulder press", sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["fdelt","sdelt","triceps"], demo:"Dumbbell_Shoulder_Press" },
-        { id:"u_latpull",  n:"Lat pulldown",             sets:3, w:null, r:10, lo:10, hi:12, inc:10, mus:["lats","biceps"], demo:"Wide-Grip_Lat_Pulldown" },
-        { id:"u_pushdown", n:"Cable rope pushdown",      sets:3, w:null, r:12, lo:10, hi:15, inc:5,  mus:["triceps"], demo:"Triceps_Pushdown_-_Rope_Attachment" },
-        { id:"u_curl",     n:"Cable curl",               sets:3, w:null, r:12, lo:10, hi:15, inc:5,  mus:["biceps"], demo:"Standing_Biceps_Cable_Curl" },
+        { id:"u_bench", lib:"bench",      sets:4, w:null, r:8,  lo:6,  hi:10, inc:5 },
+        { id:"u_cablerow", lib:"cgrow",         sets:4, w:null, r:10, lo:8,  hi:12, inc:10 },
+        { id:"u_dbpress", lib:"dbpress", sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"u_latpull", lib:"latpull",             sets:3, w:null, r:10, lo:10, hi:12, inc:10 },
+        { id:"u_pushdown", lib:"pushdown",      sets:3, w:null, r:12, lo:10, hi:15, inc:5 },
+        { id:"u_curl", lib:"cablecurl",               sets:3, w:null, r:12, lo:10, hi:15, inc:5 },
       ]},
       lowerA: { name:"Lower A", core:"Dead bug 3×8/side · Plank 3×30 s", ex:[
-        { id:"l_legpress", n:"Leg press",                sets:4, w:null, r:10, lo:8,  hi:12, inc:10, mus:["quads","glutes"], demo:"Leg_Press" },
-        { id:"l_rdl",      n:"Romanian deadlift",        sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["hams","glutes","lowback"], demo:"Romanian_Deadlift" },
-        { id:"l_legext",   n:"Leg extension",            sets:3, w:null, r:12, lo:12, hi:15, inc:10, mus:["quads"], demo:"Leg_Extensions" },
-        { id:"l_hamcurl",  n:"Seated hamstring curl",    sets:3, w:null, r:12, lo:10, hi:12, inc:10, mus:["hams"], demo:"Seated_Leg_Curl" },
-        { id:"l_calf",     n:"Calf raise",               sets:4, w:null, r:12, lo:12, hi:15, inc:10, mus:["calves"], demo:"Seated_Calf_Raise" },
+        { id:"l_legpress", lib:"legpress",                sets:4, w:null, r:10, lo:8,  hi:12, inc:10 },
+        { id:"l_rdl", lib:"rdl",        sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"l_legext", lib:"legext",            sets:3, w:null, r:12, lo:12, hi:15, inc:10 },
+        { id:"l_hamcurl", lib:"hamcurl",    sets:3, w:null, r:12, lo:10, hi:12, inc:10 },
+        { id:"l_calf", lib:"calf",               sets:4, w:null, r:12, lo:12, hi:15, inc:10 },
       ]},
       upperB: { name:"Upper B", core:"Reverse crunch 3×12 · Side plank 3×20 s/side", ex:[
-        { id:"u_incdb",    n:"Incline DB press",         sets:4, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["chest","fdelt","triceps"], demo:"Incline_Dumbbell_Press" },
-        { id:"u_bbrow",    n:"Bent over barbell row",    sets:4, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["lats","traps","lowback","biceps"], demo:"Bent_Over_Barbell_Row" },
-        { id:"u_lateral",  n:"DB lateral raise",         sets:4, w:null, r:12, lo:12, hi:15, inc:2.5,mus:["sdelt"], demo:"Side_Lateral_Raise" },
-        { id:"u_underlat", n:"Underhand lat pulldown",   sets:3, w:null, r:12, lo:10, hi:12, inc:10, mus:["lats","biceps"], demo:"Underhand_Cable_Pulldowns" },
-        { id:"u_ohtri",    n:"Overhead triceps extension",sets:3, w:null, r:10, lo:10, hi:12, inc:5,  mus:["triceps"], demo:"Cable_Rope_Overhead_Triceps_Extension" },
-        { id:"u_hammer",   n:"DB hammer curl",           sets:3, w:null, r:10, lo:10, hi:12, inc:5,  mus:["biceps","forearms"], demo:"Alternate_Hammer_Curl" },
+        { id:"u_incdb", lib:"incdb",         sets:4, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"u_bbrow", lib:"bbrow",    sets:4, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"u_lateral", lib:"lateral",         sets:4, w:null, r:12, lo:12, hi:15, inc:2.5 },
+        { id:"u_underlat", lib:"underlat",   sets:3, w:null, r:12, lo:10, hi:12, inc:10 },
+        { id:"u_ohtri", lib:"cableoh",sets:3, w:null, r:10, lo:10, hi:12, inc:5 },
+        { id:"u_hammer", lib:"hammer",           sets:3, w:null, r:10, lo:10, hi:12, inc:5 },
       ]},
       lowerB: { name:"Lower B", core:"Captain's chair leg raise 3×10 · Pallof 3×10/side", ex:[
-        { id:"l_hipthrust",n:"Hip thrust machine",       sets:4, w:null, r:10, lo:8,  hi:12, inc:10, mus:["glutes","hams"], demo:"Barbell_Hip_Thrust" },
-        { id:"l_split",    n:"DB Bulgarian split squat", sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["quads","glutes"], demo:"Split_Squat_with_Dumbbells" },
-        { id:"l_hamcurlB", n:"Seated hamstring curl",    sets:4, w:null, r:12, lo:10, hi:12, inc:10, mus:["hams"], demo:"Seated_Leg_Curl" },
-        { id:"l_legextB",  n:"Leg extension",            sets:3, w:null, r:12, lo:12, hi:15, inc:10, mus:["quads"], demo:"Leg_Extensions" },
-        { id:"l_backext",  n:"Back extension",           sets:3, w:null, r:12, lo:12, hi:15, inc:5,  mus:["lowback","glutes","hams"], demo:"Hyperextensions_Back_Extensions" },
-        { id:"l_calfB",    n:"Calf raise",               sets:4, w:null, r:15, lo:12, hi:15, inc:10, mus:["calves"], demo:"Seated_Calf_Raise" },
+        { id:"l_hipthrust", lib:"hipthrust",       sets:4, w:null, r:10, lo:8,  hi:12, inc:10 },
+        { id:"l_split", lib:"split", sets:3, w:null, r:10, lo:8,  hi:12, inc:5 },
+        { id:"l_hamcurlB", lib:"hamcurl",    sets:4, w:null, r:12, lo:10, hi:12, inc:10 },
+        { id:"l_legextB", lib:"legext",            sets:3, w:null, r:12, lo:12, hi:15, inc:10 },
+        { id:"l_backext", lib:"backext",           sets:3, w:null, r:12, lo:12, hi:15, inc:5 },
+        { id:"l_calfB", lib:"calf",               sets:4, w:null, r:15, lo:12, hi:15, inc:10 },
       ]},
       recovery: { name:"Active recovery", rest:true, core:"30–45 min walk · mobility", ex:[] },
       off: { name:"Rest day", rest:true, ex:[] },
@@ -507,7 +642,7 @@ const MUSCLES = {
   biceps:{n:"Biceps"}, triceps:{n:"Triceps"}, forearms:{n:"Forearms"},
   abs:{n:"Abs"}, obliques:{n:"Obliques"},
   lats:{n:"Lats",big:true}, traps:{n:"Traps"}, lowback:{n:"Lower back",big:true},
-  quads:{n:"Quads",big:true}, hams:{n:"Hamstrings",big:true}, glutes:{n:"Glutes",big:true}, calves:{n:"Calves"},
+  quads:{n:"Quads",big:true}, hams:{n:"Hamstrings",big:true}, glutes:{n:"Glutes",big:true}, adductors:{n:"Adductors"}, calves:{n:"Calves"},
 };
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -524,8 +659,8 @@ const fmtDate = s => { const d=parse(s); return `${MON[d.getMonth()]} ${d.getDat
 function isoWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7)); return Math.ceil(((t-Date.UTC(t.getUTCFullYear(),0,1))/864e5+1)/7); }
 const daysBetween = (a,b) => Math.round((parse(b)-parse(a))/864e5);
 
-let DB = { sessions:{}, targets:{}, weights:[], active:null, block:null, settings:{ theme:"venice", program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } };
-let menuOpen=false, pickOpen=false, startSheet=null, blockDone=false, clockTimer=null, demoOpen={}, DEMO_CACHE={}, view="train", sub="map", cursor=new Date(), openEx=null, draft={}, coreDone=false, statPick=null, review=null, selMuscle=null, toastMsg=null;
+let DB = { sessions:{}, targets:{}, weights:[], active:null, block:null, swaps:{}, sessionSwaps:{}, settings:{ theme:"venice", program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } };
+let menuOpen=false, pickOpen=false, swapOpen=null, swapKeep=false, startSheet=null, blockDone=false, clockTimer=null, demoOpen={}, DEMO_CACHE={}, view="train", sub="map", cursor=new Date(), openEx=null, draft={}, coreDone=false, statPick=null, review=null, selMuscle=null, toastMsg=null;
 
 function load(){
   try {
@@ -536,7 +671,8 @@ function load(){
       if (old) { const o = JSON.parse(old); DB.sessions = o.sessions||{}; DB.targets = o.targets||{}; }
     }
   } catch(e){}
-  DB.sessions ||= {}; DB.targets ||= {}; DB.weights ||= []; DB.active ||= null; DB.block ||= null;
+  DB.sessions ||= {}; DB.targets ||= {}; DB.weights ||= []; DB.active ||= null; DB.block ||= null; DB.swaps ||= {}; DB.sessionSwaps ||= {};
+  for (const d in DB.sessions) { const r=DB.sessions[d]; for (const f of ["ex","tank"]) { if (!r[f]) continue; const o={}; for (const k in r[f]) o[MIGRATE[k]||k]=r[f][k]; r[f]=o; } }
   if (!DB.block && Object.keys(DB.sessions).length) {          // migrate: wrap existing sessions in a block
     const first = Object.keys(DB.sessions).sort()[0]; const m = mondayOf(parse(first));
     startBlock(DB.settings?.program || "arnold", m, false);
@@ -590,8 +726,17 @@ async function loadDemo(id){
   return DEMO_CACHE[id];
 }
 const dayKeyFor = d => slotFor(iso(d)).key;
-const allEx = () => { const a=[]; for (const k in prog().days) for (const e of prog().days[k].ex) if(!a.some(x=>x.id===e.id)) a.push(e); return a; };
-const exById = id => allEx().find(e=>e.id===id);
+const libEx = key => LIB[key] ? Object.assign({ id:key, lib:key, tkey:key }, LIB[key]) : null;
+function resolveEx(slot, ds){
+  const lib = DB.sessionSwaps[ds]?.[slot.id] || DB.swaps[slot.id] || slot.lib;
+  const L = LIB[lib] || LIB[slot.lib], swapped = lib!==slot.lib;
+  return Object.assign({}, slot, { lib, n:L.n, mus:L.mus, demo:L.demo, eq:L.eq, swapped, tkey: swapped ? slot.id+"~"+lib : slot.id, note: swapped?null:slot.note });
+}
+const allEx = () => { const seen=new Set(), a=[]; for (const k in prog().days) for (const e of prog().days[k].ex) { const lib=DB.swaps[e.id]||e.lib; if (!seen.has(lib)) { seen.add(lib); a.push(libEx(lib)); } }
+  for (const d in DB.sessions) for (const k in (DB.sessions[d].ex||{})) if (LIB[k] && !seen.has(k)) { seen.add(k); a.push(libEx(k)); } return a; };
+const exById = id => libEx(id);
+function alternativesFor(ex){ const pm=ex.mus[0]; return Object.keys(LIB).filter(k=>k!==ex.lib && LIB[k].mus[0]===pm).map(libEx)
+  .sort((a,b)=>(a.eq===ex.eq?0:1)-(b.eq===ex.eq?0:1) || a.n.localeCompare(b.n)); }
 
 // ═══════════════════════════════════════════════════════════════════════
 //  PROGRESSION MODEL
@@ -601,7 +746,9 @@ const exById = id => allEx().find(e=>e.id===id);
 const tankToRIR = t => t<=2 ? 0 : t<=4 ? 1 : t<=6 ? 2 : t<=8 ? 3 : 4;
 const tankLabel = t => ({0:"Nothing left — that was the last rep",1:"One more, maybe",2:"Two clean reps left",3:"Three left — solid but easy",4:"Plenty left — this was light"})[tankToRIR(t)];
 
-function target(ex){ return DB.targets[ex.id] || { w:ex.w, r:ex.r }; }
+function target(ex){ const k=ex.tkey||ex.id; if (DB.targets[k]) return DB.targets[k];
+  if (ex.swapped) { const h=historyFor(ex.lib); if (h.length) { const t=h[h.length-1].sets[0]; return { w:t.w, r:Math.max(ex.lo, Math.min(t.r, ex.hi)) }; } }
+  return { w:ex.w??null, r:ex.r }; }
 
 function nextTarget(ex, t, top, tank){
   if (top.r===null) return { t, moved:false, why:"" };
@@ -634,9 +781,9 @@ function muscleStats(){
   for (const d in DB.sessions) {
     const s = DB.sessions[d], age = daysBetween(d, today);
     for (const id in (s.ex||{})) {
-      const ex = exById(id); if (!ex) continue;
+      const ex = LIB[id]; if (!ex) continue;
       const n = s.ex[id].filter(x=>x.r).length; if (!n) continue;
-      ex.mus.forEach((m,i)=>{
+      ex.mus.forEach((m,i)=>{ if (!out[m]) return;
         const wgt = i===0 ? 1 : 0.5;
         if (age<=6) out[m].sets7 += n*wgt;
         if (age<=27) out[m].sets28 += n*wgt;
@@ -645,12 +792,12 @@ function muscleStats(){
     }
     if (s.core) ["abs","obliques"].forEach(m=>{ if(age<=6) out[m].sets7+=3; if(age<=27) out[m].sets28+=3; if(!out[m].lastDate||d>out[m].lastDate) out[m].lastDate=d; });
   }
-  for (const ex of allEx()) {
-    const h = historyFor(ex.id).filter(x=>daysBetween(x.date,today)<=27);
+  for (const key in LIB) { const ex=LIB[key];
+    const h = historyFor(key).filter(x=>daysBetween(x.date,today)<=27);
     if (h.length<2) continue;
     const a=e1rm(h[0].sets[0].w,h[0].sets[0].r), b=e1rm(h[h.length-1].sets[0].w,h[h.length-1].sets[0].r);
     if (!a||!b) continue;
-    const pct=(b-a)/a*100, m=ex.mus[0];
+    const pct=(b-a)/a*100, m=ex.mus[0]; if (!out[m]) continue;
     (trendAcc[m] ||= []).push(pct);
   }
   for (const m in trendAcc) out[m].trend = trendAcc[m].reduce((a,b)=>a+b,0)/trendAcc[m].length;
@@ -756,24 +903,31 @@ function renderTrain(){
   if (slot.makeup) h += `<div class="pad" style="padding-bottom:0"><div class="note plain">Making up ${day.name} from week ${slot.sess.week}. <span data-unmakeup="${slot.sess.i}" style="color:var(--accent-2);cursor:pointer">Undo</span></div></div>`;
 
   h += `<div class="list">`;
-  for (const ex of day.ex) {
-    const t=target(ex), isOpen=openEx===ex.id;
-    const d = draft[ex.id] || saved?.ex?.[ex.id] || [];
+  for (const slotEx of day.ex) {
+    const ex=resolveEx(slotEx, ds), t=target(ex), isOpen=openEx===ex.id;
+    const d = draft[ex.id] || saved?.ex?.[ex.lib] || [];
     const logged = d[0]&&d[0].r;
     const hit = logged && d[0].r>=t.r && (t.w===null||d[0].w>=t.w);
-    const best = bestFor(ex.id, ds), curE = logged ? e1rm(d[0].w,d[0].r) : null;
+    const best = bestFor(ex.lib, ds), curE = logged ? e1rm(d[0].w,d[0].r) : null;
     const isPR = logged && curE && (!best || curE>best.e);
-    const tank = (draft.__tank||{})[ex.id] ?? saved?.tank?.[ex.id] ?? null;
+    const tank = (draft.__tank||{})[ex.id] ?? saved?.tank?.[ex.lib] ?? null;
 
     h += `<div class="ex ${isOpen?"open":""} ${logged?"logged":""} ${isPR&&saved?"pr":""}">
       <div class="exhead" data-open="${ex.id}">
         ${ex.demo?`<img class="thumb" src="${DEMO_BASE}${ex.demo}/1.jpg" alt="" loading="lazy">`:""}
-        <div class="exname">${ex.n}<div class="exmeta">${ex.sets} sets · ${ex.lo}–${ex.hi}${ex.drop?" · drop set":""}${isPR&&saved?" · <b style='color:var(--accent)'>new best</b>":""}</div></div>
+        <div class="exname">${ex.n}<div class="exmeta">${ex.sets} sets · ${ex.lo}–${ex.hi}${ex.swapped?' · <span style="color:var(--accent-2)">swapped</span>':""}${ex.drop?" · drop set":""}${isPR&&saved?" · <b style='color:var(--accent)'>new best</b>":""}</div></div>
         <div class="target ${hit?"hit":""}">${t.w===null?"—":fmt(t.w)} × ${t.r}<small>${logged?(hit?"target met":"logged"):"beat this"}</small></div>
       </div>`;
     if (isOpen) {
-      const prev = lastFor(ex.id, ds);
+      const prev = lastFor(ex.lib, ds);
       h += `<div class="exbody">`;
+      if (swapOpen===ex.id) {
+        const alts=alternativesFor(ex);
+        h += `<div class="swap"><div class="lbl"><span>Swap ${LIB[slotEx.lib].n}</span><label><input type="checkbox" id="swapkeep" ${swapKeep?"checked":""}> Keep for future sessions</label></div>
+          ${ex.swapped?`<button class="alt back" data-swapto="${slotEx.lib}"><b>Back to ${LIB[slotEx.lib].n}</b><span>The program's pick</span></button>`:""}
+          ${alts.map(a=>`<button class="alt" data-swapto="${a.lib}"><img src="${DEMO_BASE}${a.demo}/1.jpg" alt="" loading="lazy"><div><b>${a.n}</b><span>${EQ[a.eq]} · ${a.mus.map(m=>MUSCLES[m]?.n||m).join(", ")}</span></div></button>`).join("")}
+          <button class="ghost" style="width:100%;margin-top:6px" data-swapclose>Cancel</button></div>`;
+      }
       if (prev) h += `<div class="lastwk">Last (${fmtDate(prev.date)}): <b>${prev.sets.filter(s=>s.r).map(s=>`${fmt(s.w)}×${s.r}`).join(" · ")}</b>${best?` · best ${fmt(best.w)}×${best.r}`:""}</div>`;
       else if (t.w===null) h += `<div class="lastwk">No baseline yet. Leave 2 in the tank and record what you get.</div>`;
       for (let i=0;i<(slot.deload?Math.min(2,ex.sets):ex.sets);i++){ const s=d[i]||{};
@@ -788,7 +942,7 @@ function renderTrain(){
       if (ex.note && DB.settings.seed==="myles") h += `<div class="note">${ex.note}</div>`;
       if (ex.demo) {
         const open = demoOpen[ex.id], dm = DEMO_CACHE[ex.demo];
-        h += `<button class="howto" data-demo="${ex.id}">${open?"Hide":"How to"} ▸</button>`;
+        h += `<div class="rowbtns"><button class="howto" data-demo="${ex.id}">${open?"Hide":"How to"} ▸</button><button class="howto" data-swap="${ex.id}">Swap ⇄</button></div>`;
         if (open) h += `<div class="demo"><div class="frames"><img src="${DEMO_BASE}${ex.demo}/0.jpg" alt="Start position" loading="lazy"><img src="${DEMO_BASE}${ex.demo}/1.jpg" alt="End position" loading="lazy"></div>
           ${dm ? (dm.err ? `<div class="muted">Couldn't load instructions.</div>` : `<ol class="steps">${dm.steps.map(x=>`<li>${x}</li>`).join("")}</ol>`) : `<div class="muted">Loading…</div>`}
           <div class="credit">Images and cues: free-exercise-db (public domain)</div></div>`;
@@ -810,32 +964,46 @@ function renderTrain(){
 
 // ── Body ───────────────────────────────────────────────────────────────
 function bodySVG(front, levels){
-  const M = (id,shape,cls) => `<${shape.tag} class="m l${levels[id]?.level??0} ${selMuscle===id?"selm":""}" data-m="${id}" ${shape.a}/>`;
-  const R = (x,y,w,h,rx=6)=>({tag:"rect",a:`x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}"`});
-  const C = (cx,cy,r)=>({tag:"ellipse",a:`cx="${cx}" cy="${cy}" rx="${r}" ry="${r*1.05}"`});
-  const P = d=>({tag:"path",a:`d="${d}"`});
+  // Left-side shapes are drawn once and mirrored; unpaired shapes (traps, abs seam) drawn once.
+  const cls = id => `m l${levels[id]?.level??0} ${selMuscle===id?"selm":""}`;
+  const P = (id,d) => `<path class="${cls(id)}" data-m="${id}" d="${d}"/>`;
+  const pair = (id,d) => P(id,d) + `<g transform="translate(200,0) scale(-1,1)">${P(id,d)}</g>`;
+  const skin = d => `<path class="skin" d="${d}"/>`;
+  const skinPair = d => skin(d) + `<g transform="translate(200,0) scale(-1,1)">${skin(d)}</g>`;
+
   let s = `<svg viewBox="0 0 200 380" xmlns="http://www.w3.org/2000/svg">
-    <circle class="skin" cx="100" cy="28" r="19"/><rect class="skin" x="91" y="46" width="18" height="14" rx="4"/>
-    <rect class="skin" x="40" y="60" width="120" height="290" rx="34"/>`;
+    <ellipse class="skin" cx="100" cy="26" rx="16" ry="19"/>
+    ${skin("M91 43 L109 43 L111 57 L89 57 Z")}
+    ${skin("M60 60 Q100 52 140 60 L149 122 Q146 152 133 172 L135 188 Q100 198 65 188 L67 172 Q54 152 51 122 Z")}
+    ${skinPair("M60 62 Q46 66 38 82 L34 142 Q42 148 52 144 L60 100 Z")}
+    ${skinPair("M34 144 Q28 152 29 164 L33 200 Q40 206 48 202 L52 146 Z")}
+    ${skinPair("M31 200 Q28 214 36 218 Q46 216 46 204 Z")}
+    ${skinPair("M65 188 Q58 226 62 262 L69 296 Q82 300 97 296 L98 190 Z")}
+    ${skinPair("M69 296 L66 352 Q72 360 84 360 L92 352 L96 296 Z")}
+    ${skinPair("M66 352 L60 366 Q70 372 86 370 L92 352 Z")}`;
+
   if (front) {
-    s += M("traps",P("M84 60 L116 60 L134 74 L100 68 L66 74 Z"))
-       + M("fdelt",C(60,80,13)) + M("fdelt",C(140,80,13))
-       + M("chest",R(66,72,32,36,8)) + M("chest",R(102,72,32,36,8))
-       + M("biceps",R(46,96,18,44,8)) + M("biceps",R(136,96,18,44,8))
-       + M("forearms",R(42,144,18,46,8)) + M("forearms",R(140,144,18,46,8))
-       + M("abs",R(82,112,36,56,7)) + M("obliques",R(66,114,13,52,6)) + M("obliques",R(121,114,13,52,6))
-       + M("quads",R(70,176,28,92,10)) + M("quads",R(102,176,28,92,10))
-       + `<rect class="skin" x="74" y="276" width="22" height="70" rx="8"/><rect class="skin" x="104" y="276" width="22" height="70" rx="8"/>`;
+    s += P("traps", "M88 56 Q78 64 62 66 L60 61 Q80 55 100 54 Q120 55 140 61 L138 66 Q122 64 112 56 Z")
+       + pair("sdelt", "M38 76 Q35 88 40 100 Q47 104 52 98 Q46 88 47 76 Z")
+       + pair("fdelt", "M47 74 Q54 60 66 64 Q72 80 62 98 Q54 102 52 98 Q45 88 47 74 Z")
+       + pair("chest", "M66 66 Q84 62 98 66 L98 104 Q86 112 70 102 Q60 86 66 66 Z")
+       + pair("biceps", "M45 100 Q52 96 59 100 L55 142 Q47 144 42 140 Z")
+       + pair("forearms", "M37 148 Q45 145 52 149 L48 198 Q40 202 34 196 Z")
+       + pair("abs", "M84 108 L98 108 L98 176 Q90 181 84 176 Z")
+       + `<g class="seam"><path d="M84 126 L98 126 M84 144 L98 144 M84 162 L98 162 M102 126 L116 126 M102 144 L116 144 M102 162 L116 162"/></g>`
+       + pair("obliques", "M66 108 Q76 112 82 118 L82 172 Q72 166 66 150 Z")
+       + pair("quads", "M67 192 Q78 188 96 194 L96 258 Q94 286 86 292 Q74 290 68 272 Q60 232 67 192 Z")
+       + pair("adductors", "M96 194 L98 194 L98 250 Q96 254 94 250 Z");
   } else {
-    s += M("traps",P("M100 60 L134 76 L100 112 L66 76 Z"))
-       + M("rdelt",C(60,80,13)) + M("rdelt",C(140,80,13))
-       + M("lats",P("M66 90 L96 100 L96 168 L74 156 Z")) + M("lats",P("M134 90 L104 100 L104 168 L126 156 Z"))
-       + M("triceps",R(46,96,18,44,8)) + M("triceps",R(136,96,18,44,8))
-       + M("forearms",R(42,144,18,46,8)) + M("forearms",R(140,144,18,46,8))
-       + M("lowback",R(86,138,28,34,7))
-       + M("glutes",R(70,176,28,36,11)) + M("glutes",R(102,176,28,36,11))
-       + M("hams",R(70,216,28,60,10)) + M("hams",R(102,216,28,60,10))
-       + M("calves",R(74,282,22,58,9)) + M("calves",R(104,282,22,58,9));
+    s += P("traps", "M100 56 L136 74 Q120 96 100 130 Q80 96 64 74 Z")
+       + pair("rdelt", "M42 70 Q50 58 64 64 Q68 80 58 96 Q46 98 42 70 Z")
+       + pair("lats", "M62 92 Q56 122 66 152 L96 166 L96 104 Q80 100 62 92 Z")
+       + pair("triceps", "M45 100 Q52 96 59 100 L55 142 Q47 144 42 140 Z")
+       + pair("forearms", "M37 148 Q45 145 52 149 L48 198 Q40 202 34 196 Z")
+       + pair("lowback", "M89 134 L98 134 L98 182 L89 182 Z")
+       + pair("glutes", "M65 188 Q80 182 98 190 L98 226 Q82 234 66 224 Q58 206 65 188 Z")
+       + pair("hams", "M67 230 Q82 234 96 228 L96 278 Q88 294 78 292 Q68 286 67 264 Z")
+       + pair("calves", "M69 298 Q80 294 92 298 L92 320 Q88 348 80 350 Q70 346 69 322 Z");
   }
   return s + `</svg>`;
 }
@@ -978,7 +1146,7 @@ function renderStart(){
 }
 function renderBlockDone(){
   const bi=blockInfo(), P=PROGRAMS[bi.b.program]; const lifts=[];
-  for (const k in P.days) for (const ex of P.days[k].ex){ const h=historyFor(ex.id).filter(x=>x.date>=bi.b.start); if (h.length>=2){ const a=e1rm(h[0].sets[0].w,h[0].sets[0].r), z=e1rm(h[h.length-1].sets[0].w,h[h.length-1].sets[0].r); if (a&&z) lifts.push({n:ex.n,pct:(z-a)/a*100,from:h[0].sets[0],to:h[h.length-1].sets[0]}); } }
+  const seen=new Set(); for (const k in P.days) for (const sx of P.days[k].ex){ const ex=libEx(DB.swaps[sx.id]||sx.lib); if (seen.has(ex.lib)) continue; seen.add(ex.lib); const h=historyFor(ex.lib).filter(x=>x.date>=bi.b.start); if (h.length>=2){ const a=e1rm(h[0].sets[0].w,h[0].sets[0].r), z=e1rm(h[h.length-1].sets[0].w,h[h.length-1].sets[0].r); if (a&&z) lifts.push({n:ex.n,pct:(z-a)/a*100,from:h[0].sets[0],to:h[h.length-1].sets[0]}); } }
   lifts.sort((a,b)=>b.pct-a.pct);
   return `<div class="modal"><div class="sheet" onclick="event.stopPropagation()">
     <div class="prbanner">Block complete — ${bi.done} of ${bi.req} sessions</div>
@@ -1015,7 +1183,9 @@ function bind(){
   $$("[data-sub]").forEach(b=>b.onclick=()=>{ sub=b.dataset.sub; selMuscle=null; render(); });
   $$("[data-goto]").forEach(b=>b.onclick=()=>{ cursor=parse(b.dataset.goto); view="train"; openEx=null; draft={}; coreDone=false; render(); });
   $$("[data-open]").forEach(b=>b.onclick=()=>{ const id=b.dataset.open;
-    if (openEx!==id){ const sv=DB.sessions[iso(cursor)]; if (sv?.ex?.[id] && !draft[id]) draft[id]=sv.ex[id].map(s=>({...s})); if (sv?.tank?.[id]!==undefined){ draft.__tank ||= {}; draft.__tank[id] ??= sv.tank[id]; } }
+    if (openEx!==id){ const ds=iso(cursor), sv=DB.sessions[ds], slot=slotFor(ds), day=prog().days[slot.key], se=day?.ex?.find(x=>x.id===id); const lib=se?resolveEx(se,ds).lib:id;
+      if (sv?.ex?.[lib] && !draft[id]) draft[id]=sv.ex[lib].map(s=>({...s})); if (sv?.tank?.[lib]!==undefined){ draft.__tank ||= {}; draft.__tank[id] ??= sv.tank[lib]; } }
+    swapOpen=null;
     openEx = openEx===id?null:id; render(); });
   $$("[data-m]").forEach(b=>b.onclick=()=>{ selMuscle = selMuscle===b.dataset.m?null:b.dataset.m; render(); });
   const cm=$("[data-clearm]"); if (cm) cm.onclick=()=>{ selMuscle=null; render(); };
@@ -1056,13 +1226,21 @@ function bind(){
     if (!has && !confirm("Nothing logged yet. Finish anyway?")) return; saveSession(); };
   const dc=$("#discard"); if (dc) dc.onclick=()=>{ if (confirm("Discard the timer? Your entered sets stay.")) { DB.active=null; persist(); if (clockTimer){ clearInterval(clockTimer); clockTimer=null; } render(); } };
   $$("[data-week]").forEach(b=>b.onclick=()=>{ cursor.setDate(cursor.getDate()+7*Number(b.dataset.week)); openEx=null; draft={}; coreDone=false; render(); });
-  $$("[data-demo]").forEach(b=>b.onclick=async()=>{ const id=b.dataset.demo, ex=exById(id); demoOpen[id]=!demoOpen[id]; render(); if (demoOpen[id] && !DEMO_CACHE[ex.demo]) { await loadDemo(ex.demo); render(); } });
+  $$("[data-demo]").forEach(b=>b.onclick=async()=>{ const id=b.dataset.demo, ds=iso(cursor), slot=slotFor(ds), day=prog().days[slot.key], ex=resolveEx(day.ex.find(x=>x.id===id), ds); demoOpen[id]=!demoOpen[id]; render(); if (demoOpen[id] && !DEMO_CACHE[ex.demo]) { await loadDemo(ex.demo); render(); } });
+  $$("[data-swap]").forEach(b=>b.onclick=()=>{ swapOpen = swapOpen===b.dataset.swap ? null : b.dataset.swap; render(); });
+  $$("[data-swapclose]").forEach(b=>b.onclick=()=>{ swapOpen=null; render(); });
+  const sk=$("#swapkeep"); if (sk) sk.onchange=()=>{ swapKeep=sk.checked; };
+  $$("[data-swapto]").forEach(b=>b.onclick=()=>{ const ds=iso(cursor), slot=slotFor(ds), day=prog().days[slot.key], slotEx=day.ex.find(x=>x.id===swapOpen), to=b.dataset.swapto;
+    if (to===slotEx.lib) { delete DB.swaps[slotEx.id]; if (DB.sessionSwaps[ds]) delete DB.sessionSwaps[ds][slotEx.id]; }
+    else if (swapKeep) { DB.swaps[slotEx.id]=to; if (DB.sessionSwaps[ds]) delete DB.sessionSwaps[ds][slotEx.id]; }
+    else { DB.sessionSwaps[ds] ||= {}; DB.sessionSwaps[ds][slotEx.id]=to; }
+    delete draft[slotEx.id]; if (draft.__tank) delete draft.__tank[slotEx.id]; swapOpen=null; persist(); render(); });
   if (DB.active) startClock();
   const wS=$("#wSave"); if (wS) wS.onclick=()=>{ const v=Number($("#wIn").value)||null, wa=Number($("#waistIn").value)||null, hp=Number($("#hipIn").value)||null; if(!v&&!wa&&!hp) return; const d=iso(new Date());
     const prev=DB.weights.find(w=>w.date===d)||{}; DB.weights = DB.weights.filter(w=>w.date!==d); DB.weights.push({date:d, w:v??prev.w??null, waist:wa??prev.waist??null, hips:hp??prev.hips??null}); persist(); toast("Logged"); };
   const exp=$("#exp"); if (exp) exp.onclick=exportData;
   const imp=$("#imp"), impf=$("#impfile"); if (imp) imp.onclick=()=>impf.click(); if (impf) impf.onchange=()=>{ if(impf.files[0]) importData(impf.files[0]); };
-  const rs=$("#reset"); if (rs) rs.onclick=()=>{ if (confirm("Erase every session, target and weigh-in on this device?")) { localStorage.removeItem(KEY); localStorage.removeItem("training-log-v1"); DB={ sessions:{}, targets:{}, weights:[], active:null, block:null, settings:{ theme:DB.settings.theme, themeSet:DB.settings.themeSet, program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } }; persist(); render(); } };
+  const rs=$("#reset"); if (rs) rs.onclick=()=>{ if (confirm("Erase every session, target and weigh-in on this device?")) { localStorage.removeItem(KEY); localStorage.removeItem("training-log-v1"); DB={ sessions:{}, targets:{}, weights:[], active:null, block:null, swaps:{}, sessionSwaps:{}, settings:{ theme:DB.settings.theme, themeSet:DB.settings.themeSet, program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } }; persist(); render(); } };
 }
 
 function saveSession(){
@@ -1070,18 +1248,19 @@ function saveSession(){
   const rec = DB.sessions[ds] || { day:key, ex:{}, tank:{} };
   rec.tank ||= {};
   const rows=[], prs=[]; let sets=0,reps=0,vol=0;
-  for (const ex of day.ex){
-    const d=draft[ex.id] || rec.ex[ex.id]; if (!d || !d.some(s=>s&&s.r)) continue;
+  for (const slotEx of day.ex){
+    const ex=resolveEx(slotEx, ds);
+    const d=draft[ex.id] || rec.ex[ex.lib]; if (!d || !d.some(s=>s&&s.r)) continue;
     const clean=[]; for (let i=0;i<ex.sets;i++){ const s=d[i]||{}; clean.push({w:s.w??null,r:s.r??null}); }
-    rec.ex[ex.id]=clean;
-    const tank = draft.__tank?.[ex.id] ?? rec.tank[ex.id] ?? null; if (tank) rec.tank[ex.id]=tank;
+    rec.ex[ex.lib]=clean;
+    const tank = draft.__tank?.[ex.id] ?? rec.tank[ex.lib] ?? null; if (tank) rec.tank[ex.lib]=tank;
     for (const s of clean) if (s.r){ sets++; reps+=s.r; vol+=(s.w||0)*s.r; }
     const top=clean[0]; if (!top.r) continue;
-    const before=target(ex), best=bestFor(ex.id, ds), e=e1rm(top.w,top.r);
+    const before=target(ex), best=bestFor(ex.lib, ds), e=e1rm(top.w,top.r);
     const pr = !!(e && (!best || e>best.e) && best);   // needs a prior to count as "new"
     if (pr) prs.push({n:ex.n});
     const nx = slot.deload ? { t:before, moved:false, why:"Deload — holds" } : nextTarget(ex, before, top, tank);
-    DB.targets[ex.id]=nx.t;
+    DB.targets[ex.tkey]=nx.t;
     rows.push({ n:ex.n, from:before, to:nx.t, why:nx.why, pr });
   }
   rec.core = !!(coreDone || rec.core);
@@ -1095,7 +1274,7 @@ function saveSession(){
 }
 
 function exportData(){ const blob=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`${APP_NAME.toLowerCase()}-${iso(new Date())}.json`; a.click(); URL.revokeObjectURL(a.href); }
-function importData(file){ const fr=new FileReader(); fr.onload=()=>{ try { const n=JSON.parse(fr.result); if(!n.sessions) throw 0; DB={ sessions:n.sessions, targets:n.targets||{}, weights:n.weights||[], active:null, block:n.block||null, settings:Object.assign(DB.settings,n.settings||{}) }; load(); persist(); document.documentElement.dataset.theme=DB.settings.theme; toast("Backup restored"); } catch(e){ toast("That file isn't a "+APP_NAME+" backup."); } }; fr.readAsText(file); }
+function importData(file){ const fr=new FileReader(); fr.onload=()=>{ try { const n=JSON.parse(fr.result); if(!n.sessions) throw 0; DB={ sessions:n.sessions, targets:n.targets||{}, weights:n.weights||[], active:null, block:n.block||null, swaps:n.swaps||{}, sessionSwaps:n.sessionSwaps||{}, settings:Object.assign(DB.settings,n.settings||{}) }; load(); persist(); document.documentElement.dataset.theme=DB.settings.theme; toast("Backup restored"); } catch(e){ toast("That file isn't a "+APP_NAME+" backup."); } }; fr.readAsText(file); }
 
 load(); render();
 </script>
