@@ -67,7 +67,17 @@
   .head { padding:22px 18px 16px; border-bottom:1px solid var(--line); }
   .head .date { font-size:13px; color:var(--dim); }
   .head .sub { font-size:13.5px; color:var(--dim); margin-top:7px; }
-  .head select { margin-top:12px; margin-bottom:0; }
+  .picker { position:relative; margin-top:12px; }
+  .pickbtn { width:100%; display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:12px 14px; color:var(--ink); font-size:14.5px; font-weight:500; }
+  .pickbtn i { width:8px; height:8px; border-right:2px solid var(--dim); border-bottom:2px solid var(--dim); transform:rotate(45deg) translateY(-2px); transition:transform .15s; }
+  .pickbtn.open { border-color:var(--accent); }
+  .pickbtn.open i { transform:rotate(-135deg) translateY(-2px); }
+  .pickmenu { position:absolute; left:0; right:0; top:calc(100% + 6px); background:var(--surface); border:1px solid var(--accent); border-radius:7px; overflow:hidden; z-index:7; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+  .pickmenu button { width:100%; text-align:left; background:none; border:none; border-bottom:1px solid var(--line); padding:13px 14px; color:var(--ink); }
+  .pickmenu button:last-child { border-bottom:none; }
+  .pickmenu button.on { background:var(--surface-2); }
+  .pickmenu b { display:block; font-size:14.5px; font-weight:600; }
+  .pickmenu span { display:block; font-size:12px; color:var(--dim); margin-top:2px; line-height:1.4; }
 
   .pad { padding:18px; }
   .lede { color:var(--dim); font-size:13.5px; margin:3px 0 18px; }
@@ -421,7 +431,7 @@ function isoWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.ge
 const daysBetween = (a,b) => Math.round((parse(b)-parse(a))/864e5);
 
 let DB = { sessions:{}, targets:{}, weights:[], active:null, settings:{ theme:"venice", program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } };
-let menuOpen=false, clockTimer=null, demoOpen={}, DEMO_CACHE={}, view="train", sub="map", cursor=new Date(), openEx=null, draft={}, coreDone=false, statPick=null, review=null, selMuscle=null, toastMsg=null;
+let menuOpen=false, pickOpen=false, clockTimer=null, demoOpen={}, DEMO_CACHE={}, view="train", sub="map", cursor=new Date(), openEx=null, draft={}, coreDone=false, statPick=null, review=null, selMuscle=null, toastMsg=null;
 
 function load(){
   try {
@@ -439,7 +449,7 @@ function load(){
   document.documentElement.dataset.theme = DB.settings.theme;
 }
 function persist(){ try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e){ toast("Couldn't save. Storage may be full."); } }
-function toast(m){ toastMsg=m; render(); setTimeout(()=>{ toastMsg=null; render(); },1900); }
+function toast(m){ toastMsg=m; render(); setTimeout(()=>{ toastMsg=null; const t=document.querySelector(".toast"); if (t) t.remove(); },1900); }
 
 const prog = () => PROGRAMS[DB.settings.program] || PROGRAMS.arnold;
 const DEMO_BASE = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/";
@@ -569,7 +579,7 @@ function render(){
   const cur = NAV.find(n=>n[0]===view);
   h = `<div class="topbar"><div class="brand">${APP_NAME}<span>${cur?cur[1]:""}</span></div>
     <button class="burger ${menuOpen?"x":""}" id="burger" aria-label="Menu" aria-expanded="${menuOpen}"><i></i><i></i><i></i></button></div>` + h;
-  if (menuOpen) h += `<div class="scrim" data-menuclose></div><nav class="drawer">${NAV.map(([k,l,ic])=>
+  if (menuOpen) h += `<div class="scrim" data-menuclose></div><nav class="drawer" onclick="event.stopPropagation()">${NAV.map(([k,l,ic])=>
     `<button class="${view===k?"on":""}" data-tab="${k}">${ic}${l}</button>`).join("")}<div class="foot">${prog().name}</div></nav>`;
   if (!DB.settings.onboarded) h += renderOnboard();
   else if (review) h += renderReview();
@@ -587,7 +597,10 @@ function renderTrain(){
     <h1>${day.name}</h1>
     <div class="sub">${day.rest ? "No lifting scheduled." : `${day.ex.length} exercises${day.optional?" · optional day":""}${saved?" · logged":""}${ds>today&&!saved?" · targets update as you log":""}`}</div>
     ${active ? `<div class="clockrow"><span class="clocklbl">In progress</span><span id="clock" class="clock">${mmss(Date.now()-active.start)}</span><button class="clockx" id="discard" aria-label="Discard timer">×</button></div>` : ""}
-    <select id="progpick">${Object.keys(PROGRAMS).map(k=>`<option value="${k}" ${k===DB.settings.program?"selected":""}>${PROGRAMS[k].name}</option>`).join("")}</select>
+    <div class="picker">
+      <button class="pickbtn ${pickOpen?"open":""}" id="pickbtn" aria-expanded="${pickOpen}"><span>${prog().name}</span><i></i></button>
+      ${pickOpen?`<div class="pickmenu">${Object.keys(PROGRAMS).map(k=>`<button class="${k===DB.settings.program?"on":""}" data-prog="${k}"><b>${PROGRAMS[k].name}</b><span>${PROGRAMS[k].desc}</span></button>`).join("")}</div>`:""}
+    </div>
   </header>`;
 
   h += `<div class="weekstrip"><button class="wk" data-week="-1" aria-label="Previous week">‹</button>`;
@@ -843,7 +856,10 @@ function bind(){
   $$("[data-close]").forEach(b=>b.onclick=()=>{ review=null; render(); });
   $$("[data-theme]").forEach(b=>b.onclick=()=>{ DB.settings.theme=b.dataset.theme; DB.settings.themeSet=true; document.documentElement.dataset.theme=DB.settings.theme; persist(); render(); });
 
-  ["progpick","progpick2"].forEach(id=>{ const el=document.getElementById(id); if (el) el.onchange=()=>{ DB.settings.program=el.value; persist(); render(); }; });
+  const pb=$("#pickbtn"); if (pb) pb.onclick=(e)=>{ e.stopPropagation(); pickOpen=!pickOpen; render(); };
+  $$("[data-prog]").forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); DB.settings.program=b.dataset.prog; pickOpen=false; persist(); render(); });
+  const pp=$("#progpick2"); if (pp) pp.onchange=()=>{ DB.settings.program=pp.value; persist(); render(); };
+  if (pickOpen) document.body.onclick=()=>{ pickOpen=false; document.body.onclick=null; render(); }; else document.body.onclick=null;
   const pick=$("#pick"); if (pick) pick.onchange=()=>{ statPick=pick.value; render(); };
   const nm=$("#nameIn"); if (nm) nm.onchange=()=>{ DB.settings.name=nm.value.trim(); persist(); toast("Saved"); };
   const goal=$("#goalIn"); if (goal) goal.onchange=()=>{ DB.settings.goalWeight = goal.value===""?null:Number(goal.value); persist(); toast("Goal saved"); };
