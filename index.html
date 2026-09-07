@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-<title>Granite</title>
+<title>Hewn</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Granite">
+<meta name="apple-mobile-web-app-title" content="Hewn">
 <meta name="theme-color" content="#000000">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23000000'/%3E%3Crect x='28' y='78' width='124' height='24' rx='4' fill='%23E8B923'/%3E%3Crect x='16' y='62' width='22' height='56' rx='5' fill='%23ECEEF1'/%3E%3Crect x='142' y='62' width='22' height='56' rx='5' fill='%23ECEEF1'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,7 @@
   #splash .splashmark { font-family:'Big Shoulders Display','Barlow Condensed',system-ui,sans-serif; font-size:34px; font-weight:900; letter-spacing:.12em; color:#E8B923; text-transform:uppercase; }
   @keyframes spin3d { from { transform:rotateY(0deg); } to { transform:rotateY(360deg); } }
   @media (prefers-reduced-motion:reduce) { #splash .spin { animation:none; } }
-  :root { --logo:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cpath d='M60 6 L106 32 L106 88 L60 114 L14 88 L14 32 Z' fill='%23E8B923'/%3E%3Cpath d='M60 6 L106 32 L60 58 L14 32 Z' fill='%23F3CF5C'/%3E%3Cpath d='M14 32 L60 58 L60 114 L14 88 Z' fill='%23C99A1B'/%3E%3Cpath d='M78 46 L60 36 L42 46 L42 74 L60 84 L78 74 L78 62 L62 62 L62 70 L69 70 L69 69 L60 74 L51 69 L51 51 L60 46 L69 51 L69 54 L78 54 Z' fill='%23000'/%3E%3C/svg%3E"); }
+  :root { --logo:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cpath d='M60 6 L106 32 L106 88 L60 114 L14 88 L14 32 Z' fill='%23E8B923'/%3E%3Cpath d='M60 6 L106 32 L60 58 L14 32 Z' fill='%23F3CF5C'/%3E%3Cpath d='M14 32 L60 58 L60 114 L14 88 Z' fill='%23C99A1B'/%3E%3Cpath d='M42 42 L52 42 L52 56 L68 56 L68 42 L78 42 L78 82 L68 82 L68 66 L52 66 L52 82 L42 82 Z' fill='%23000'/%3E%3C/svg%3E"); }
 
   /* ── Themes ─────────────────────────────────────────────────────── */
   html[data-theme="venice"] {
@@ -314,7 +314,7 @@
     <div class="face back"></div>
     <div class="edge e1"></div><div class="edge e2"></div>
   </div>
-  <div class="splashmark">GRANITE</div>
+  <div class="splashmark">HEWN</div>
 </div>
 <div id="app"></div>
 
@@ -675,7 +675,7 @@ const MUSCLES = {
 // ═══════════════════════════════════════════════════════════════════════
 //  STATE + STORAGE
 // ═══════════════════════════════════════════════════════════════════════
-const APP_NAME = "Granite";
+const APP_NAME = "Hewn";
 const KEY = "lift-log-v2";
 const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const parse = s => { const [y,m,dd] = s.split("-").map(Number); return new Date(y,m-1,dd); };
