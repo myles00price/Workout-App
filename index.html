@@ -105,6 +105,18 @@
   .weeklbl span { color:var(--accent-2); cursor:pointer; }
   .wk { width:26px; border:none; background:none; color:var(--dim); font-size:22px; padding:0; }
   .wd.today { box-shadow:inset 0 0 0 1px var(--accent-2); }
+  .wd.sched { border-color:var(--line); }
+  .wd.sched .n { color:var(--ink); }
+  .wd.done { background:color-mix(in srgb,var(--accent) 14%,var(--surface)); border-color:var(--accent); }
+  .wd.missed .n { color:var(--accent-2); text-decoration:line-through; text-decoration-thickness:2px; }
+  .blockbar { margin-top:12px; }
+  .blockbar .bl { display:flex; justify-content:space-between; font-size:12px; color:var(--dim); margin-bottom:5px; }
+  .blockbar .bl em { color:var(--accent-2); font-style:normal; font-weight:600; }
+  .blockbar .bar { height:5px; background:var(--surface-2); border-radius:3px; overflow:hidden; }
+  .blockbar .bar i { display:block; height:100%; background:var(--accent); border-radius:3px; }
+  .makeup { width:100%; text-align:left; display:flex; flex-direction:column; gap:2px; margin-bottom:8px; }
+  .makeup b { font-size:14px; }
+  .makeup span { font-size:12px; color:var(--dim); }
 
   /* week strip */
   .weekstrip { display:flex; gap:5px; padding:14px 8px 0; align-items:stretch; }
@@ -278,6 +290,8 @@ const PROGRAMS = {
   arnold: {
     name: "Arnold split",
     desc: "Chest+Back / Shoulders+Arms / Legs. 5 days, Saturday alternates.",
+    why: "High volume with antagonist pairing. Chest and back in one session lets you push both harder — one rests while the other works. Built for people who recover well and like being in the gym.",
+    level: "Intermediate", daysPerWeek: "4–5", weeks: 4, deload: true,
     priority: [],
     schedule: d => {
       const wd = d.getDay();
@@ -348,6 +362,8 @@ const PROGRAMS = {
   sculpt: {
     name: "Sculpt",
     desc: "Glutes, legs, and a lean build. 4 days plus an optional 5th. Same overload model, different emphasis.",
+    why: "Lower body twice a week is what actually grows glutes — frequency beats one brutal leg day. Hip thrusts and RDLs lead because they load the glutes at the lengths that matter. Shoulders build the V that makes the waist read smaller.",
+    level: "Beginner", daysPerWeek: "4–5", weeks: 6, deload: true,
     priority: ["glutes","hams","quads","abs","obliques","sdelt"],
     schedule: d => {
       const wd = d.getDay();
@@ -399,6 +415,84 @@ const PROGRAMS = {
       ]},
       off: { name:"Rest day", rest:true, ex:[] },
     }
+  },
+  foundation: {
+    name: "Foundation",
+    desc: "Full body, 3 days. Every big pattern three times a week. For anyone new or coming back.",
+    why: "New lifters grow fastest on high frequency, low per-session volume: 2–3 sets of each pattern, three times a week. You practice the movements often enough to get good at them and recover fully between sessions. Nearly every strength coach starts people here.",
+    level: "Beginner", daysPerWeek: "3", weeks: 4, deload: false,
+    priority: [],
+    schedule: d => { const wd=d.getDay(); return wd===1?"dayA": wd===3?"dayB": wd===5?"dayC": (wd===0||wd===6)?"off":"recovery"; },
+    days: {
+      dayA: { name:"Full body A", core:"Plank 3×30 s · Dead bug 3×8/side", ex:[
+        { id:"f_goblet",   n:"Goblet squat",             sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["quads","glutes"], demo:"Goblet_Squat" },
+        { id:"f_chest",    n:"Chest press machine",      sets:3, w:null, r:10, lo:8,  hi:12, inc:10, mus:["chest","triceps","fdelt"], demo:"Machine_Bench_Press" },
+        { id:"f_latpull",  n:"Lat pulldown",             sets:3, w:null, r:10, lo:10, hi:12, inc:10, mus:["lats","biceps"], demo:"Wide-Grip_Lat_Pulldown" },
+        { id:"f_rdl",      n:"Dumbbell Romanian deadlift",sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["hams","glutes","lowback"], demo:"Romanian_Deadlift" },
+        { id:"f_dbpress",  n:"Seated DB shoulder press", sets:2, w:null, r:10, lo:10, hi:12, inc:5,  mus:["fdelt","sdelt","triceps"], demo:"Dumbbell_Shoulder_Press" },
+      ]},
+      dayB: { name:"Full body B", core:"Side plank 3×20 s/side · Reverse crunch 3×12", ex:[
+        { id:"f_legpress", n:"Leg press",                sets:3, w:null, r:10, lo:10, hi:12, inc:10, mus:["quads","glutes"], demo:"Leg_Press" },
+        { id:"f_cablerow", n:"Seated cable row",         sets:3, w:null, r:10, lo:10, hi:12, inc:10, mus:["lats","traps","biceps"], demo:"Seated_Cable_Rows" },
+        { id:"f_incdb",    n:"Incline DB press",         sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["chest","fdelt","triceps"], demo:"Incline_Dumbbell_Press" },
+        { id:"f_hamcurl",  n:"Seated hamstring curl",    sets:3, w:null, r:12, lo:10, hi:12, inc:10, mus:["hams"], demo:"Seated_Leg_Curl" },
+        { id:"f_lateral",  n:"DB lateral raise",         sets:2, w:null, r:12, lo:12, hi:15, inc:2.5,mus:["sdelt"], demo:"Side_Lateral_Raise" },
+        { id:"f_pushdown", n:"Cable rope pushdown",      sets:2, w:null, r:12, lo:12, hi:15, inc:5,  mus:["triceps"], demo:"Triceps_Pushdown_-_Rope_Attachment" },
+      ]},
+      dayC: { name:"Full body C", core:"Pallof press 3×10/side · Dead bug 3×8/side", ex:[
+        { id:"f_split",    n:"DB split squat",           sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["quads","glutes"], demo:"Split_Squat_with_Dumbbells" },
+        { id:"f_underlat", n:"Underhand lat pulldown",   sets:3, w:null, r:10, lo:10, hi:12, inc:10, mus:["lats","biceps"], demo:"Underhand_Cable_Pulldowns" },
+        { id:"f_dbbench",  n:"Dumbbell bench press",     sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["chest","triceps","fdelt"], demo:"Dumbbell_Bench_Press" },
+        { id:"f_hipthrust",n:"Hip thrust machine",       sets:3, w:null, r:10, lo:10, hi:12, inc:10, mus:["glutes","hams"], demo:"Barbell_Hip_Thrust" },
+        { id:"f_facepull", n:"Face pull",                sets:2, w:null, r:15, lo:12, hi:20, inc:5,  mus:["rdelt","traps"], demo:"Face_Pull" },
+        { id:"f_hammer",   n:"DB hammer curl",           sets:2, w:null, r:12, lo:10, hi:12, inc:5,  mus:["biceps","forearms"], demo:"Alternate_Hammer_Curl" },
+      ]},
+      recovery: { name:"Active recovery", rest:true, core:"30 min walk · easy mobility", ex:[] },
+      off: { name:"Rest day", rest:true, ex:[] },
+    }
+  },
+  upperlower: {
+    name: "Upper / Lower",
+    desc: "4 days. Every muscle twice a week with enough sets to progress. The most versatile intermediate template.",
+    why: "Training each muscle twice a week outperforms once for growth at the same total volume, and four sessions is the most people sustain. Upper/lower is the simplest way to get there: each day has a clear job, and nothing gets trained sore.",
+    level: "Intermediate", daysPerWeek: "4", weeks: 4, deload: true,
+    priority: [],
+    schedule: d => { const wd=d.getDay(); return wd===1?"upperA": wd===2?"lowerA": wd===4?"upperB": wd===5?"lowerB": wd===3?"recovery":"off"; },
+    days: {
+      upperA: { name:"Upper A", core:"Pallof press 3×10/side", ex:[
+        { id:"u_bench",    n:"Barbell bench press",      sets:4, w:null, r:8,  lo:6,  hi:10, inc:5,  mus:["chest","triceps","fdelt"], demo:"Barbell_Bench_Press_-_Medium_Grip" },
+        { id:"u_cablerow", n:"Seated cable row",         sets:4, w:null, r:10, lo:8,  hi:12, inc:10, mus:["lats","traps","biceps"], demo:"Seated_Cable_Rows" },
+        { id:"u_dbpress",  n:"Seated DB shoulder press", sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["fdelt","sdelt","triceps"], demo:"Dumbbell_Shoulder_Press" },
+        { id:"u_latpull",  n:"Lat pulldown",             sets:3, w:null, r:10, lo:10, hi:12, inc:10, mus:["lats","biceps"], demo:"Wide-Grip_Lat_Pulldown" },
+        { id:"u_pushdown", n:"Cable rope pushdown",      sets:3, w:null, r:12, lo:10, hi:15, inc:5,  mus:["triceps"], demo:"Triceps_Pushdown_-_Rope_Attachment" },
+        { id:"u_curl",     n:"Cable curl",               sets:3, w:null, r:12, lo:10, hi:15, inc:5,  mus:["biceps"], demo:"Standing_Biceps_Cable_Curl" },
+      ]},
+      lowerA: { name:"Lower A", core:"Dead bug 3×8/side · Plank 3×30 s", ex:[
+        { id:"l_legpress", n:"Leg press",                sets:4, w:null, r:10, lo:8,  hi:12, inc:10, mus:["quads","glutes"], demo:"Leg_Press" },
+        { id:"l_rdl",      n:"Romanian deadlift",        sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["hams","glutes","lowback"], demo:"Romanian_Deadlift" },
+        { id:"l_legext",   n:"Leg extension",            sets:3, w:null, r:12, lo:12, hi:15, inc:10, mus:["quads"], demo:"Leg_Extensions" },
+        { id:"l_hamcurl",  n:"Seated hamstring curl",    sets:3, w:null, r:12, lo:10, hi:12, inc:10, mus:["hams"], demo:"Seated_Leg_Curl" },
+        { id:"l_calf",     n:"Calf raise",               sets:4, w:null, r:12, lo:12, hi:15, inc:10, mus:["calves"], demo:"Seated_Calf_Raise" },
+      ]},
+      upperB: { name:"Upper B", core:"Reverse crunch 3×12 · Side plank 3×20 s/side", ex:[
+        { id:"u_incdb",    n:"Incline DB press",         sets:4, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["chest","fdelt","triceps"], demo:"Incline_Dumbbell_Press" },
+        { id:"u_bbrow",    n:"Bent over barbell row",    sets:4, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["lats","traps","lowback","biceps"], demo:"Bent_Over_Barbell_Row" },
+        { id:"u_lateral",  n:"DB lateral raise",         sets:4, w:null, r:12, lo:12, hi:15, inc:2.5,mus:["sdelt"], demo:"Side_Lateral_Raise" },
+        { id:"u_underlat", n:"Underhand lat pulldown",   sets:3, w:null, r:12, lo:10, hi:12, inc:10, mus:["lats","biceps"], demo:"Underhand_Cable_Pulldowns" },
+        { id:"u_ohtri",    n:"Overhead triceps extension",sets:3, w:null, r:10, lo:10, hi:12, inc:5,  mus:["triceps"], demo:"Cable_Rope_Overhead_Triceps_Extension" },
+        { id:"u_hammer",   n:"DB hammer curl",           sets:3, w:null, r:10, lo:10, hi:12, inc:5,  mus:["biceps","forearms"], demo:"Alternate_Hammer_Curl" },
+      ]},
+      lowerB: { name:"Lower B", core:"Captain's chair leg raise 3×10 · Pallof 3×10/side", ex:[
+        { id:"l_hipthrust",n:"Hip thrust machine",       sets:4, w:null, r:10, lo:8,  hi:12, inc:10, mus:["glutes","hams"], demo:"Barbell_Hip_Thrust" },
+        { id:"l_split",    n:"DB Bulgarian split squat", sets:3, w:null, r:10, lo:8,  hi:12, inc:5,  mus:["quads","glutes"], demo:"Split_Squat_with_Dumbbells" },
+        { id:"l_hamcurlB", n:"Seated hamstring curl",    sets:4, w:null, r:12, lo:10, hi:12, inc:10, mus:["hams"], demo:"Seated_Leg_Curl" },
+        { id:"l_legextB",  n:"Leg extension",            sets:3, w:null, r:12, lo:12, hi:15, inc:10, mus:["quads"], demo:"Leg_Extensions" },
+        { id:"l_backext",  n:"Back extension",           sets:3, w:null, r:12, lo:12, hi:15, inc:5,  mus:["lowback","glutes","hams"], demo:"Hyperextensions_Back_Extensions" },
+        { id:"l_calfB",    n:"Calf raise",               sets:4, w:null, r:15, lo:12, hi:15, inc:10, mus:["calves"], demo:"Seated_Calf_Raise" },
+      ]},
+      recovery: { name:"Active recovery", rest:true, core:"30–45 min walk · mobility", ex:[] },
+      off: { name:"Rest day", rest:true, ex:[] },
+    }
   }
 };
 
@@ -430,8 +524,8 @@ const fmtDate = s => { const d=parse(s); return `${MON[d.getMonth()]} ${d.getDat
 function isoWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7)); return Math.ceil(((t-Date.UTC(t.getUTCFullYear(),0,1))/864e5+1)/7); }
 const daysBetween = (a,b) => Math.round((parse(b)-parse(a))/864e5);
 
-let DB = { sessions:{}, targets:{}, weights:[], active:null, settings:{ theme:"venice", program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } };
-let menuOpen=false, pickOpen=false, clockTimer=null, demoOpen={}, DEMO_CACHE={}, view="train", sub="map", cursor=new Date(), openEx=null, draft={}, coreDone=false, statPick=null, review=null, selMuscle=null, toastMsg=null;
+let DB = { sessions:{}, targets:{}, weights:[], active:null, block:null, settings:{ theme:"venice", program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } };
+let menuOpen=false, pickOpen=false, startSheet=null, blockDone=false, clockTimer=null, demoOpen={}, DEMO_CACHE={}, view="train", sub="map", cursor=new Date(), openEx=null, draft={}, coreDone=false, statPick=null, review=null, selMuscle=null, toastMsg=null;
 
 function load(){
   try {
@@ -442,16 +536,49 @@ function load(){
       if (old) { const o = JSON.parse(old); DB.sessions = o.sessions||{}; DB.targets = o.targets||{}; }
     }
   } catch(e){}
-  DB.sessions ||= {}; DB.targets ||= {}; DB.weights ||= []; DB.active ||= null;
+  DB.sessions ||= {}; DB.targets ||= {}; DB.weights ||= []; DB.active ||= null; DB.block ||= null;
+  if (!DB.block && Object.keys(DB.sessions).length) {          // migrate: wrap existing sessions in a block
+    const first = Object.keys(DB.sessions).sort()[0]; const m = mondayOf(parse(first));
+    startBlock(DB.settings?.program || "arnold", m, false);
+    for (const d in DB.sessions) { const sess = DB.block.sessions.find(x=>x.date===d); if (sess) DB.block.done[sess.i]=d; }
+  }
   DB.settings = Object.assign({ theme:"venice", program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false }, DB.settings||{});
-  if (!DB.settings.onboarded && Object.keys(DB.sessions).length) { DB.settings.onboarded=true; DB.settings.seed="myles"; DB.settings.name ||= "Myles"; }   // existing install = Myles
+  // existing installs keep their data and see the welcome sheet once to set a name
   if (!DB.settings.themeSet) DB.settings.theme = "venice";   // new default unless the user has picked one
   document.documentElement.dataset.theme = DB.settings.theme;
 }
 function persist(){ try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e){ toast("Couldn't save. Storage may be full."); } }
 function toast(m){ toastMsg=m; render(); setTimeout(()=>{ toastMsg=null; const t=document.querySelector(".toast"); if (t) t.remove(); },1900); }
 
-const prog = () => PROGRAMS[DB.settings.program] || PROGRAMS.arnold;
+const prog = () => PROGRAMS[DB.block?.program || DB.settings.program] || PROGRAMS.arnold;
+function mondayOf(d){ const m=new Date(d); m.setDate(m.getDate()-((m.getDay()+6)%7)); m.setHours(0,0,0,0); return m; }
+function startBlock(programKey, startDate, save=true){
+  const P=PROGRAMS[programKey], weeks=P.weeks||4, sessions=[]; let i=0;
+  for (let d=0; d<weeks*7; d++){ const dt=new Date(startDate); dt.setDate(dt.getDate()+d); const k=P.schedule(dt), day=P.days[k];
+    if (day && !day.rest){ const week=Math.floor(d/7)+1; sessions.push({ i:i++, day:k, date:iso(dt), week, deload:!!(P.deload&&week===weeks), optional:!!day.optional }); } }
+  const end=new Date(startDate); end.setDate(end.getDate()+weeks*7-1);
+  DB.block={ program:programKey, start:iso(startDate), end:iso(end), weeks, sessions, done:{}, makeups:{} };
+  DB.settings.program=programKey; DB.active=null;
+  if (save) persist();
+}
+function slotFor(ds){
+  const b=DB.block; if (!b) return { key:"off", none:true };
+  const P=PROGRAMS[b.program];
+  const mk=Object.entries(b.makeups).find(([i,d])=>d===ds);
+  if (mk){ const sess=b.sessions[Number(mk[0])]; return { key:sess.day, sess, deload:sess.deload, makeup:true }; }
+  const sess=b.sessions.find(x=>x.date===ds);
+  if (sess) return { key:sess.day, sess, deload:sess.deload };
+  if (ds>=b.start && ds<=b.end){ const k=P.schedule(parse(ds)); return { key:(P.days[k]&&P.days[k].rest)?k:"off", sess:null }; }
+  return { key:"off", sess:null, outside:true };
+}
+function blockInfo(){
+  const b=DB.block; if (!b) return null; const today=iso(new Date());
+  const req=b.sessions.filter(x=>!x.optional), done=req.filter(x=>b.done[x.i]).length;
+  const missed=b.sessions.filter(x=>!x.optional && !b.done[x.i] && !b.makeups[x.i] && x.date<today);
+  const pending=b.sessions.filter(x=>!x.optional && !b.done[x.i] && b.makeups[x.i]);
+  const dayN=Math.max(0,daysBetween(b.start,today)), week=Math.min(b.weeks, Math.floor(dayN/7)+1);
+  return { b, req:req.length, done, missed, pending, week, complete: done>=req.length, past: today>b.end };
+}
 const DEMO_BASE = "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/";
 const mmss = ms => { const t=Math.max(0,Math.floor(ms/1000)); const h=Math.floor(t/3600), m=Math.floor(t%3600/60), sec=t%60; return (h?h+":":"")+String(m).padStart(h?2:1,"0")+":"+String(sec).padStart(2,"0"); };
 function tickClock(){ const el=document.getElementById("clock"); if (el && DB.active) el.textContent = mmss(Date.now()-DB.active.start); }
@@ -462,7 +589,7 @@ async function loadDemo(id){
   catch(e){ DEMO_CACHE[id]={ steps:[], err:true }; }
   return DEMO_CACHE[id];
 }
-const dayKeyFor = d => prog().schedule(d);
+const dayKeyFor = d => slotFor(iso(d)).key;
 const allEx = () => { const a=[]; for (const k in prog().days) for (const e of prog().days[k].ex) if(!a.some(x=>x.id===e.id)) a.push(e); return a; };
 const exById = id => allEx().find(e=>e.id===id);
 
@@ -583,38 +710,50 @@ function render(){
     `<button class="${view===k?"on":""}" data-tab="${k}">${ic}${l}</button>`).join("")}<div class="foot">${prog().name}</div></nav>`;
   if (!DB.settings.onboarded) h += renderOnboard();
   else if (review) h += renderReview();
+  else if (blockDone) h += renderBlockDone();
+  else if (startSheet) h += renderStart();
   if (toastMsg) h += `<div class="toast">${toastMsg}</div>`;
   app.innerHTML = h; bind();
 }
 
 // ── Train ──────────────────────────────────────────────────────────────
 function renderTrain(){
-  const key=dayKeyFor(cursor), day=prog().days[key], ds=iso(cursor), saved=DB.sessions[ds], today=iso(new Date());
+  const ds=iso(cursor), today=iso(new Date()), slot=slotFor(ds), key=slot.key, day=prog().days[key]||{name:"Rest day",rest:true,ex:[]}, saved=DB.sessions[ds];
   const active = DB.active && DB.active.date===ds ? DB.active : null;
+  const bi=blockInfo();
 
   let h = `<header class="head">
     <div class="date">${DB.settings.name?DB.settings.name+" · ":""}${DOW[cursor.getDay()]}, ${MON[cursor.getMonth()]} ${cursor.getDate()}${ds===today?" · today":""}</div>
-    <h1>${day.name}</h1>
-    <div class="sub">${day.rest ? "No lifting scheduled." : `${day.ex.length} exercises${day.optional?" · optional day":""}${saved?" · logged":""}${ds>today&&!saved?" · targets update as you log":""}`}</div>
+    <h1>${slot.none ? "No program running" : slot.outside ? "Outside your block" : day.name}</h1>
+    <div class="sub">${slot.none ? "Pick a program below to start a block." : slot.outside ? (ds>DB.block.end ? "Your block has ended. Start the next one below." : "Your block starts "+fmtDate(DB.block.start)+".") : day.rest ? "No lifting scheduled." : `${day.ex.length} exercises${slot.deload?" · deload":""}${slot.makeup?" · make-up session":""}${day.optional?" · optional":""}${saved?" · logged":""}${ds>today&&!saved?" · targets update as you log":""}`}</div>
+    ${bi ? `<div class="blockbar"><div class="bl"><span>${PROGRAMS[bi.b.program].name} · Week ${bi.week} of ${bi.b.weeks}</span><span>${bi.done}/${bi.req} done${bi.missed.length?` · <em>${bi.missed.length} to make up</em>`:""}</span></div><div class="bar"><i style="width:${Math.round(bi.done/bi.req*100)}%"></i></div></div>` : ""}
     ${active ? `<div class="clockrow"><span class="clocklbl">In progress</span><span id="clock" class="clock">${mmss(Date.now()-active.start)}</span><button class="clockx" id="discard" aria-label="Discard timer">×</button></div>` : ""}
     <div class="picker">
       <button class="pickbtn ${pickOpen?"open":""}" id="pickbtn" aria-expanded="${pickOpen}"><span>${prog().name}</span><i></i></button>
-      ${pickOpen?`<div class="pickmenu">${Object.keys(PROGRAMS).map(k=>`<button class="${k===DB.settings.program?"on":""}" data-prog="${k}"><b>${PROGRAMS[k].name}</b><span>${PROGRAMS[k].desc}</span></button>`).join("")}</div>`:""}
+      ${pickOpen?`<div class="pickmenu">${Object.keys(PROGRAMS).map(k=>`<button class="${k===DB.block?.program?"on":""}" data-prog="${k}"><b>${PROGRAMS[k].name}</b><span>${PROGRAMS[k].level} · ${PROGRAMS[k].daysPerWeek} days/wk · ${PROGRAMS[k].weeks}-week block</span><span>${PROGRAMS[k].desc}</span></button>`).join("")}</div>`:""}
     </div>
   </header>`;
 
   h += `<div class="weekstrip"><button class="wk" data-week="-1" aria-label="Previous week">‹</button>`;
   const mon = new Date(cursor); mon.setDate(mon.getDate()-((mon.getDay()+6)%7));
-  for (let i=0;i<7;i++){ const d=new Date(mon); d.setDate(mon.getDate()+i); const k=iso(d), dk=dayKeyFor(d);
-    h += `<div class="wd ${k===ds?"sel":""} ${DB.sessions[k]?"done":""} ${prog().days[dk].rest?"rest":""} ${k===today?"today":""}" data-goto="${k}">${DOW[d.getDay()][0]}<span class="n">${d.getDate()}</span></div>`; }
+  for (let i=0;i<7;i++){ const d=new Date(mon); d.setDate(mon.getDate()+i); const k=iso(d), sl=slotFor(k);
+    const done = sl.sess && DB.block.done[sl.sess.i]===k, missed = sl.sess && !done && !sl.sess.optional && k<today && !DB.block.makeups[sl.sess.i], sched = !!sl.sess;
+    h += `<div class="wd ${k===ds?"sel":""} ${done?"done":""} ${missed?"missed":""} ${sched&&!done&&!missed?"sched":""} ${!sched?"rest":""} ${k===today?"today":""}" data-goto="${k}">${DOW[d.getDay()][0]}<span class="n">${done?"✓":d.getDate()}</span></div>`; }
   h += `<button class="wk" data-week="1" aria-label="Next week">›</button></div>`;
   const sun=new Date(mon); sun.setDate(mon.getDate()+6);
   h += `<div class="weeklbl">${MON[mon.getMonth()]} ${mon.getDate()} – ${MON[sun.getMonth()]} ${sun.getDate()}${iso(mon)<=today&&today<=iso(sun)?"":' · <span data-goto="'+today+'">back to today</span>'}</div>`;
 
-  if (day.rest) {
-    h += `<div class="pad">${day.core?`<div class="note plain">${day.core}</div>`:""}<div class="note plain" style="margin-top:10px"><b>Cardio:</b> ${cardioFor(key)}</div></div>`;
-    return h;
+  if (day.rest || slot.none || slot.outside) {
+    h += `<div class="pad">`;
+    if (slot.none || slot.outside) h += `<button class="primary" id="openpick" style="margin-bottom:14px">Start a program</button>`;
+    if (bi && bi.missed.length && !saved && ds<=today) h += `<h3 style="margin-bottom:6px">Make up a missed session</h3><p class="lede">Do it today and it counts toward the block.</p>` +
+      bi.missed.map(x=>`<button class="ghost makeup" data-makeup="${x.i}"><b>${PROGRAMS[bi.b.program].days[x.day].name}</b><span>Week ${x.week} · was ${fmtDate(x.date)}</span></button>`).join("");
+    if (day.core) h += `<div class="note plain">${day.core}</div>`;
+    if (!slot.none && !slot.outside) h += `<div class="note plain" style="margin-top:10px"><b>Cardio:</b> ${cardioFor(key)}</div>`;
+    h += `</div>`; return h;
   }
+  if (slot.deload) h += `<div class="pad" style="padding-bottom:0"><div class="note"><b>Deload week.</b> Same weights, two working sets per exercise. Targets hold this week. This is where the growth from the last three weeks actually shows up.</div></div>`;
+  if (slot.makeup) h += `<div class="pad" style="padding-bottom:0"><div class="note plain">Making up ${day.name} from week ${slot.sess.week}. <span data-unmakeup="${slot.sess.i}" style="color:var(--accent-2);cursor:pointer">Undo</span></div></div>`;
 
   h += `<div class="list">`;
   for (const ex of day.ex) {
@@ -637,7 +776,7 @@ function renderTrain(){
       h += `<div class="exbody">`;
       if (prev) h += `<div class="lastwk">Last (${fmtDate(prev.date)}): <b>${prev.sets.filter(s=>s.r).map(s=>`${fmt(s.w)}×${s.r}`).join(" · ")}</b>${best?` · best ${fmt(best.w)}×${best.r}`:""}</div>`;
       else if (t.w===null) h += `<div class="lastwk">No baseline yet. Leave 2 in the tank and record what you get.</div>`;
-      for (let i=0;i<ex.sets;i++){ const s=d[i]||{};
+      for (let i=0;i<(slot.deload?Math.min(2,ex.sets):ex.sets);i++){ const s=d[i]||{};
         h += `<div class="setrow"><div class="setlabel">${i===0?"<b>Top set</b>":"Set "+(i+1)}</div>
           <div class="field"><input inputmode="decimal" data-ex="${ex.id}" data-i="${i}" data-f="w" value="${s.w??""}" placeholder="${i===0&&t.w!==null?fmt(t.w):""}"><span>lbs</span></div>
           <div class="field"><input inputmode="numeric" data-ex="${ex.id}" data-i="${i}" data-f="r" value="${s.r??""}" placeholder="${i===0?t.r:""}"><span>reps</span></div></div>`; }
@@ -809,17 +948,44 @@ function renderOnboard(){
   return `<div class="modal"><div class="sheet" onclick="event.stopPropagation()">
     <div class="obmark">${APP_NAME}</div>
     <h2>Who's lifting?</h2>
-    <p class="lede">Your log stays on this phone. Every target starts blank and builds from what you actually lift.</p>
+    <p class="lede">${DB.block?`Your log is intact — ${Object.keys(DB.sessions).length} session${Object.keys(DB.sessions).length===1?"":"s"} saved. Just add a name.`:"Your log stays on this phone. Every target starts blank and builds from what you actually lift."}</p>
     <input class="txt" id="obName" placeholder="Your name" autocomplete="off">
-    <div class="muted" style="margin:-4px 0 8px">What are you building?</div>
+    ${DB.block?"":`<div class="muted" style="margin:-4px 0 8px">What are you building?</div>
     <div class="goals">
-      <label class="goal"><input type="radio" name="obProg" value="arnold" checked><div><b>Build all over</b><span>Arnold split. Chest, back, shoulders, arms, legs — 5 days.</span></div></label>
-      <label class="goal"><input type="radio" name="obProg" value="sculpt"><div><b>Glutes, legs, and lean</b><span>Sculpt. Lower body twice a week, shoulders and core, optional glute day.</span></div></label>
-    </div>
+      <label class="goal"><input type="radio" name="obProg" value="foundation" checked><div><b>New or coming back</b><span>Foundation. Full body, 3 days. The fastest start.</span></div></label>
+      <label class="goal"><input type="radio" name="obProg" value="upperlower"><div><b>Build all over, 4 days</b><span>Upper / Lower. Every muscle twice a week.</span></div></label>
+      <label class="goal"><input type="radio" name="obProg" value="arnold"><div><b>Build all over, 5 days</b><span>Arnold split. High volume, chest and back paired.</span></div></label>
+      <label class="goal"><input type="radio" name="obProg" value="sculpt"><div><b>Glutes, legs, and lean</b><span>Sculpt. Lower body twice a week, shoulders and core.</span></div></label>
+    </div>`}
     <label class="corecheck" style="margin:0 0 14px"><input type="checkbox" id="obSeed"> Load Myles's starting numbers<span class="muted">only if this is Myles's phone</span></label>
     <button class="primary" id="obGo">Start</button>
     <div class="muted" style="text-align:center;margin-top:10px">Program: ${prog().name}</div>
   </div></div>`;
+}
+
+// ── Start / complete sheets ────────────────────────────────────────────
+function renderStart(){
+  const P=PROGRAMS[startSheet], b=DB.block, bi=blockInfo();
+  const m=mondayOf(new Date()), nxt=new Date(m); nxt.setDate(m.getDate()+7);
+  const n=(()=>{ let c=0; for (let d=0;d<P.weeks*7;d++){ const dt=new Date(m); dt.setDate(m.getDate()+d); const k=P.schedule(dt); if (P.days[k]&&!P.days[k].rest&&!P.days[k].optional) c++; } return c; })();
+  return `<div class="modal" data-closestart><div class="sheet" onclick="event.stopPropagation()">
+    <div class="muted">${P.level} · ${P.daysPerWeek} days a week · ${P.weeks} weeks</div>
+    <h2>${P.name}</h2>
+    <p class="lede" style="margin-top:8px">${P.why}</p>
+    <div class="note plain">${n} sessions${P.deload?` · week ${P.weeks} is a deload`:""}${b&&bi&&!bi.complete?`<br><b style="color:var(--accent-2)">This replaces your current ${PROGRAMS[b.program].name} block (${bi.done}/${bi.req} done).</b>`:""}</div>
+    <div class="bkrow" style="margin-top:14px"><button class="primary" data-start="this">Start this week<br><small style="font-weight:400;opacity:.8">from Mon ${MON[m.getMonth()]} ${m.getDate()}</small></button><button class="ghost" data-start="next">Next Monday<br><small style="opacity:.7">${MON[nxt.getMonth()]} ${nxt.getDate()}</small></button></div>
+    <button class="ghost" style="width:100%;margin-top:8px" data-closestart>Cancel</button></div></div>`;
+}
+function renderBlockDone(){
+  const bi=blockInfo(), P=PROGRAMS[bi.b.program]; const lifts=[];
+  for (const k in P.days) for (const ex of P.days[k].ex){ const h=historyFor(ex.id).filter(x=>x.date>=bi.b.start); if (h.length>=2){ const a=e1rm(h[0].sets[0].w,h[0].sets[0].r), z=e1rm(h[h.length-1].sets[0].w,h[h.length-1].sets[0].r); if (a&&z) lifts.push({n:ex.n,pct:(z-a)/a*100,from:h[0].sets[0],to:h[h.length-1].sets[0]}); } }
+  lifts.sort((a,b)=>b.pct-a.pct);
+  return `<div class="modal"><div class="sheet" onclick="event.stopPropagation()">
+    <div class="prbanner">Block complete — ${bi.done} of ${bi.req} sessions</div>
+    <h2 style="margin-top:10px">${P.name}, ${bi.b.weeks} weeks</h2>
+    ${lifts.length?`<h3 style="margin:14px 0 6px">Where you moved</h3>`+lifts.slice(0,6).map(l=>`<div class="rvrow"><div class="nm">${l.n}</div><div class="nx">${fmt(l.from.w)}×${l.from.r} <span class="arrow">→</span> ${fmt(l.to.w)}×${l.to.r}</div><div class="${l.pct>0?"pr":"muted"}" style="width:52px;text-align:right;font-size:12px">${l.pct>0?"+":""}${l.pct.toFixed(0)}%</div></div>`).join(""):`<div class="empty">Not enough logged lifts to compare.</div>`}
+    <p class="lede" style="margin-top:14px">Targets carry forward. Running it again starts week one at the numbers you finished on.</p>
+    <div class="bkrow"><button class="primary" data-again>Run it again</button><button class="ghost" data-another>Pick another</button></div></div></div>`;
 }
 
 // ── Settings ───────────────────────────────────────────────────────────
@@ -830,7 +996,7 @@ function renderSettings(){
     <div class="themes">${[["venice","Venice"],["iron","Iron"],["paper","Paper"],["midnight","Midnight"]].map(([k,l])=>{ const c=sw(k);
       return `<div class="th ${s.theme===k?"on":""}" data-theme="${k}"><div class="sw" style="background:${c[0]}"><i style="background:${c[1]}"></i><i style="background:${c[2]};margin-left:3px;width:10px"></i></div>${l}</div>`; }).join("")}</div>
     <div class="row" style="margin-top:14px"><div class="k">Name<small>Shown in the header</small></div><input class="num" style="width:150px;text-align:left;font-family:var(--body);font-size:15px;font-weight:500" id="nameIn" value="${s.name||""}" placeholder="—"></div>
-    <div class="row"><div class="k">Program<small>More get added here as we build them</small></div><select id="progpick2" style="width:auto;margin:0;padding:9px 34px 9px 12px">${Object.keys(PROGRAMS).map(k=>`<option value="${k}" ${k===s.program?"selected":""}>${PROGRAMS[k].name}</option>`).join("")}</select></div>
+    <div class="row"><div class="k">Program<small>${DB.block?PROGRAMS[DB.block.program].name+" · "+fmtDate(DB.block.start)+" – "+fmtDate(DB.block.end):"No block running"}</small></div><button class="ghost" id="chgprog">Change</button></div>
     <div class="row"><div class="k">Goal weight<small>Drives the pace check on the Check-in tab</small></div><input class="num" inputmode="decimal" id="goalIn" value="${s.goalWeight??""}" placeholder="—"></div>
     <div class="row" style="flex-direction:column;align-items:stretch"><div class="k">Backup<small>Your log lives on this phone only. Save a copy every few weeks.</small></div>
       <div class="bkrow"><button class="ghost" id="exp">Save backup file</button><button class="ghost" id="imp">Restore backup</button></div><input type="file" id="impfile" accept="application/json" hidden></div>
@@ -857,8 +1023,16 @@ function bind(){
   $$("[data-theme]").forEach(b=>b.onclick=()=>{ DB.settings.theme=b.dataset.theme; DB.settings.themeSet=true; document.documentElement.dataset.theme=DB.settings.theme; persist(); render(); });
 
   const pb=$("#pickbtn"); if (pb) pb.onclick=(e)=>{ e.stopPropagation(); pickOpen=!pickOpen; render(); };
-  $$("[data-prog]").forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); DB.settings.program=b.dataset.prog; pickOpen=false; persist(); render(); });
-  const pp=$("#progpick2"); if (pp) pp.onchange=()=>{ DB.settings.program=pp.value; persist(); render(); };
+  $$("[data-prog]").forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); startSheet=b.dataset.prog; pickOpen=false; render(); });
+  const op=$("#openpick"); if (op) op.onclick=(e)=>{ e.stopPropagation(); pickOpen=true; render(); };
+  $$("[data-makeup]").forEach(b=>b.onclick=()=>{ DB.block.makeups[b.dataset.makeup]=iso(cursor); persist(); render(); });
+  $$("[data-unmakeup]").forEach(b=>b.onclick=()=>{ delete DB.block.makeups[b.dataset.unmakeup]; persist(); render(); });
+  $$("[data-start]").forEach(b=>b.onclick=()=>{ const when=b.dataset.start, P=startSheet; let m=mondayOf(new Date()); if (when==="next") m.setDate(m.getDate()+7);
+    startBlock(P, m); startSheet=null; cursor=new Date(m); if (when!=="next" && iso(new Date())>=iso(m)) cursor=new Date(); toast(PROGRAMS[P].name+" started"); });
+  $$("[data-closestart]").forEach(b=>b.onclick=()=>{ startSheet=null; render(); });
+  $$("[data-again]").forEach(b=>b.onclick=()=>{ const m=mondayOf(new Date()); if (iso(new Date())>iso(m)) m.setDate(m.getDate()+7); startBlock(DB.block.program, m); blockDone=false; cursor=new Date(m); render(); });
+  $$("[data-another]").forEach(b=>b.onclick=()=>{ blockDone=false; pickOpen=true; render(); });
+  const cp=$("#chgprog"); if (cp) cp.onclick=(e)=>{ e.stopPropagation(); view="train"; pickOpen=true; render(); };
   if (pickOpen) document.body.onclick=()=>{ pickOpen=false; document.body.onclick=null; render(); }; else document.body.onclick=null;
   const pick=$("#pick"); if (pick) pick.onchange=()=>{ statPick=pick.value; render(); };
   const nm=$("#nameIn"); if (nm) nm.onchange=()=>{ DB.settings.name=nm.value.trim(); persist(); toast("Saved"); };
@@ -874,6 +1048,7 @@ function bind(){
 
   const ob=$("#obGo"); if (ob) ob.onclick=()=>{ const nm=$("#obName").value.trim(); DB.settings.name=nm||"Lifter"; DB.settings.onboarded=true;
     const pr=document.querySelector('input[name="obProg"]:checked'); if (pr) DB.settings.program=pr.value;
+    if (!DB.block) startBlock(DB.settings.program, mondayOf(new Date()), false);
     if ($("#obSeed").checked) { DB.settings.seed="myles"; DB.targets=Object.assign({}, SEEDS.myles.targets, DB.targets); } persist(); render(); };
   const save=$("#save"); if (save) save.onclick=saveSession;
   const st=$("#start"); if (st) st.onclick=()=>{ DB.active={ date:iso(cursor), start:Date.now() }; persist(); render(); startClock(); };
@@ -887,11 +1062,11 @@ function bind(){
     const prev=DB.weights.find(w=>w.date===d)||{}; DB.weights = DB.weights.filter(w=>w.date!==d); DB.weights.push({date:d, w:v??prev.w??null, waist:wa??prev.waist??null, hips:hp??prev.hips??null}); persist(); toast("Logged"); };
   const exp=$("#exp"); if (exp) exp.onclick=exportData;
   const imp=$("#imp"), impf=$("#impfile"); if (imp) imp.onclick=()=>impf.click(); if (impf) impf.onchange=()=>{ if(impf.files[0]) importData(impf.files[0]); };
-  const rs=$("#reset"); if (rs) rs.onclick=()=>{ if (confirm("Erase every session, target and weigh-in on this device?")) { localStorage.removeItem(KEY); localStorage.removeItem("training-log-v1"); DB={ sessions:{}, targets:{}, weights:[], active:null, settings:{ theme:DB.settings.theme, themeSet:DB.settings.themeSet, program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } }; persist(); render(); } };
+  const rs=$("#reset"); if (rs) rs.onclick=()=>{ if (confirm("Erase every session, target and weigh-in on this device?")) { localStorage.removeItem(KEY); localStorage.removeItem("training-log-v1"); DB={ sessions:{}, targets:{}, weights:[], active:null, block:null, settings:{ theme:DB.settings.theme, themeSet:DB.settings.themeSet, program:"arnold", goalWeight:null, name:"", seed:null, onboarded:false } }; persist(); render(); } };
 }
 
 function saveSession(){
-  const ds=iso(cursor), key=dayKeyFor(cursor), day=prog().days[key];
+  const ds=iso(cursor), slot=slotFor(ds), key=slot.key, day=prog().days[key];
   const rec = DB.sessions[ds] || { day:key, ex:{}, tank:{} };
   rec.tank ||= {};
   const rows=[], prs=[]; let sets=0,reps=0,vol=0;
@@ -905,20 +1080,22 @@ function saveSession(){
     const before=target(ex), best=bestFor(ex.id, ds), e=e1rm(top.w,top.r);
     const pr = !!(e && (!best || e>best.e) && best);   // needs a prior to count as "new"
     if (pr) prs.push({n:ex.n});
-    const nx=nextTarget(ex, before, top, tank);
+    const nx = slot.deload ? { t:before, moved:false, why:"Deload — holds" } : nextTarget(ex, before, top, tank);
     DB.targets[ex.id]=nx.t;
     rows.push({ n:ex.n, from:before, to:nx.t, why:nx.why, pr });
   }
   rec.core = !!(coreDone || rec.core);
   if (DB.active && DB.active.date===ds) { rec.dur = Date.now()-DB.active.start; DB.active=null; if (clockTimer){ clearInterval(clockTimer); clockTimer=null; } }
+  if (slot.sess) { DB.block.done[slot.sess.i]=ds; rec.block=slot.sess.i; }
   DB.sessions[ds]=rec; persist();
   draft={}; openEx=null; coreDone=false;
   review={ date:ds, dayName:day.name, sets, reps, vol, rows, prs, dur:rec.dur, cardio:cardioFor(key) };
+  const bi=blockInfo(); if (bi && bi.complete) blockDone=true;
   render();
 }
 
 function exportData(){ const blob=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`${APP_NAME.toLowerCase()}-${iso(new Date())}.json`; a.click(); URL.revokeObjectURL(a.href); }
-function importData(file){ const fr=new FileReader(); fr.onload=()=>{ try { const n=JSON.parse(fr.result); if(!n.sessions) throw 0; DB={ sessions:n.sessions, targets:n.targets||{}, weights:n.weights||[], settings:Object.assign(DB.settings,n.settings||{}) }; persist(); document.documentElement.dataset.theme=DB.settings.theme; toast("Backup restored"); } catch(e){ toast("That file isn't a "+APP_NAME+" backup."); } }; fr.readAsText(file); }
+function importData(file){ const fr=new FileReader(); fr.onload=()=>{ try { const n=JSON.parse(fr.result); if(!n.sessions) throw 0; DB={ sessions:n.sessions, targets:n.targets||{}, weights:n.weights||[], active:null, block:n.block||null, settings:Object.assign(DB.settings,n.settings||{}) }; load(); persist(); document.documentElement.dataset.theme=DB.settings.theme; toast("Backup restored"); } catch(e){ toast("That file isn't a "+APP_NAME+" backup."); } }; fr.readAsText(file); }
 
 load(); render();
 </script>
